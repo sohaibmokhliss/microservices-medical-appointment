@@ -22,18 +22,15 @@ function RdvForm() {
   const loadDocteurs = async () => {
     try {
       const response = await docteurService.getAllDocteurs();
-      const docteursData = response.data._embedded?.docteurs || [];
-      // Extract ID from self link if not present
-      const docteursWithIds = docteursData.map(doc => {
-        if (!doc.id && doc._links?.self?.href) {
-          const id = doc._links.self.href.split('/').pop();
-          return { ...doc, id: parseInt(id) };
-        }
-        return doc;
-      });
-      setDocteurs(docteursWithIds);
+      // Handle both plain array and HAL/HATEOAS format
+      const docteursData = Array.isArray(response.data) 
+        ? response.data 
+        : (response.data._embedded?.docteurs || []);
+      
+      setDocteurs(docteursData);
     } catch (err) {
       console.error('Erreur lors du chargement des docteurs', err);
+      setDocteurs([]);
     }
   };
 
@@ -55,7 +52,7 @@ function RdvForm() {
         ...formData,
         docteurId: Number(formData.docteurId)
       };
-      const rdv = await rdvService.createRdv(rdvData);
+      await rdvService.createRdv(rdvData);
 
       // Try to send notification, but don't fail if it doesn't work
       try {

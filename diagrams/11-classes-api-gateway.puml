@@ -1,0 +1,42 @@
+@startuml Classes API Gateway
+
+skinparam backgroundColor white
+title API Gateway - Structure
+
+class JwtAuthenticationFilter {
+    - secret : String
+    - PUBLIC_ENDPOINTS : List<String>
+    + filter(exchange, chain) : Mono<Void>
+    - validateToken(token) : Claims
+    - onError(exchange, err, status) : Mono<Void>
+    + getOrder() : int
+}
+
+class CorsConfig {
+    + corsWebFilter() : CorsWebFilter
+}
+
+interface GlobalFilter
+interface Ordered
+class CorsWebFilter
+
+JwtAuthenticationFilter ..|> GlobalFilter
+JwtAuthenticationFilter ..|> Ordered
+CorsConfig --> CorsWebFilter
+
+note right of JwtAuthenticationFilter
+  Vérifie le header Authorization
+  Rejette les requêtes non authentifiées
+  Propagate X-User-Username / X-User-Role
+  avant routage
+end note
+
+note bottom
+  Routes définies dans application.properties
+  /api/auth/** -> auth-service
+  /api/docteurs/** -> docteur-service
+  /api/rdv/** -> rdv-service
+  /api/notifications/** -> notification-service
+end note
+
+@enduml

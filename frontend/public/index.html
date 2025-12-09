@@ -8,6 +8,11 @@
       name="description"
       content="Système de prise de rendez-vous médicaux en ligne"
     />
+    <!-- Relaxed CSP for local dev to allow React devtools/eval; tighten this for production -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' http://localhost:8080 http://localhost:3000 ws://localhost:3000;"
+    />
     <title>Rendez-vous Médicaux</title>
   </head>
   <body>

@@ -14,16 +14,7 @@ function DocteurList() {
     try {
       setLoading(true);
       const response = await docteurService.getAllDocteurs();
-      const docteursData = response.data._embedded?.docteurs || [];
-      // Extract ID from self link if not present
-      const docteursWithIds = docteursData.map(doc => {
-        if (!doc.id && doc._links?.self?.href) {
-          const id = doc._links.self.href.split('/').pop();
-          return { ...doc, id: parseInt(id) };
-        }
-        return doc;
-      });
-      setDocteurs(docteursWithIds);
+      setDocteurs(response.data || []);
       setError(null);
     } catch (err) {
       setError('Erreur lors du chargement des docteurs');

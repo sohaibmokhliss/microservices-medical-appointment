@@ -5,25 +5,36 @@ title Séquence - Création de Rendez-vous
 
 actor Patient
 participant Frontend
+participant "API Gateway" as GW
 participant "RDV Service" as RDV
 participant "Docteur Service" as DOC
-database "Base RDV" as DB
-participant Notification
+database "PostgreSQL\nrdvdb" as DB
+queue RabbitMQ
+participant "Notification\nService" as NOTIF
+cloud "Email\n(Resend)" as EMAIL
 
 Patient -> Frontend : Prendre RDV
-Frontend -> DOC : GET /docteurs
-DOC --> Frontend : Liste docteurs
+Frontend -> GW : GET /api/docteurs
+GW -> DOC : GET /docteurs
+DOC --> GW : Liste docteurs
+GW --> Frontend : Liste docteurs
 
-Patient -> Frontend : Sélectionne docteur
-Frontend -> RDV : POST /rdv
+Patient -> Frontend : Sélectionne docteur + remplit formulaire
+Frontend -> GW : POST /api/rdv
+GW -> RDV : POST /rdv
 RDV -> DOC : Vérifier docteur (Feign)
 DOC --> RDV : Docteur OK
 
 RDV -> DB : Sauvegarder RDV
 DB --> RDV : RDV créé
 
-RDV --> Frontend : Succès
-Frontend -> Notification : Envoyer email
+RDV -> RabbitMQ : Publier AppointmentEvent
+RDV --> GW : Succès (201)
+GW --> Frontend : RDV créé
 Frontend --> Patient : Confirmation
+
+RabbitMQ --> NOTIF : Consommer Event
+NOTIF -> EMAIL : Envoyer notification
+EMAIL --> NOTIF : Email envoyé
 
 @enduml

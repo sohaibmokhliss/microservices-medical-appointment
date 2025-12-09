@@ -1,23 +1,31 @@
-import axios from 'axios';
-
-const DOCTEUR_API_URL = 'http://localhost:8081/api';
-const RDV_API_URL = 'http://localhost:8082/api';
-const NOTIFICATION_API_URL = 'http://localhost:8083/api';
+import apiClient from './apiClient';
 
 export const docteurService = {
-  getAllDocteurs: () => axios.get(`${DOCTEUR_API_URL}/docteurs`),
-  getDocteurById: (id) => axios.get(`${DOCTEUR_API_URL}/docteurs/${id}`)
+  getAllDocteurs: () => apiClient.get('/docteurs'),
+  getDocteurById: (id) => apiClient.get(`/docteurs/${id}`),
+  createDocteur: (docteur) => apiClient.post('/docteurs', docteur),
+  updateDocteur: (id, docteur) => apiClient.put(`/docteurs/${id}`, docteur),
+  deleteDocteur: (id) => apiClient.delete(`/docteurs/${id}`)
 };
 
 export const rdvService = {
-  getAllRdv: () => axios.get(`${RDV_API_URL}/rdv`),
-  getRdvById: (id) => axios.get(`${RDV_API_URL}/rdv/${id}`),
-  getRdvByDocteur: (docteurId) => axios.get(`${RDV_API_URL}/rdv/docteur/${docteurId}`),
-  createRdv: (rdv) => axios.post(`${RDV_API_URL}/rdv`, rdv),
-  updateRdv: (id, rdv) => axios.put(`${RDV_API_URL}/rdv/${id}`, rdv),
-  deleteRdv: (id) => axios.delete(`${RDV_API_URL}/rdv/${id}`)
+  getAllRdv: () => apiClient.get('/rdv'),
+  getRdvById: (id) => apiClient.get(`/rdv/${id}`),
+  getRdvByDocteur: (docteurId) => apiClient.get(`/rdv/docteur/${docteurId}`),
+  createRdv: (rdv) => apiClient.post('/rdv', rdv),
+  updateRdv: (id, rdv) => apiClient.put(`/rdv/${id}`, rdv),
+  deleteRdv: (id) => apiClient.delete(`/rdv/${id}`)
 };
 
 export const notificationService = {
-  sendNotification: (notification) => axios.post(`${NOTIFICATION_API_URL}/notifications/send`, notification)
+  sendNotification: (notification) => apiClient.post('/notifications/send', notification)
+};
+
+export const userService = {
+  getAllUsers: () => apiClient.get('/users'),
+  getUserById: (id) => apiClient.get(`/users/${id}`),
+  createUser: (user) => apiClient.post('/users', user),
+  updateUser: (id, updates) => apiClient.put(`/users/${id}`, updates),
+  deleteUser: (id) => apiClient.delete(`/users/${id}`),
+  toggleUserStatus: (id) => apiClient.patch(`/users/${id}/toggle`)
 };

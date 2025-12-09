@@ -1,0 +1,76 @@
+@startuml Classes Auth Service
+
+skinparam backgroundColor white
+title Auth Service - Structure
+
+class User {
+    id : Long
+    username : String
+    password : String
+    email : String
+    role : String
+    enabled : Boolean
+}
+
+interface UserRepository {
+    + findByUsername(username)
+    + existsByUsername(username)
+    + existsByEmail(email)
+    + save(user)
+}
+
+class LoginRequest {
+    username : String
+    password : String
+}
+
+class RegisterRequest {
+    username : String
+    password : String
+    email : String
+    role : String
+}
+
+class LoginResponse {
+    token : String
+    username : String
+    role : String
+    message : String
+}
+
+class JwtUtil {
+    + generateToken(username, role)
+    + validateToken(token)
+    + extractUsername(token)
+    + extractRole(token)
+}
+
+class AuthService {
+    + registerUser(request) : LoginResponse
+    + loginUser(request) : LoginResponse
+    + validateToken(token) : Boolean
+    + getUsernameFromToken(token)
+    + getRoleFromToken(token)
+    + getUserByUsername(username) : User
+}
+
+class AuthController {
+    + login(request) : LoginResponse
+    + validateToken(authHeader) : Map
+    + getCurrentUser(authHeader) : Map
+}
+
+AuthController --> AuthService
+AuthService --> UserRepository
+AuthService --> JwtUtil
+UserRepository --> User
+AuthController --> LoginRequest
+AuthController --> LoginResponse
+
+note right of AuthService
+  Hashing via PasswordEncoder
+  Génération de JWT
+  Vérification du compte activé
+end note
+
+@enduml

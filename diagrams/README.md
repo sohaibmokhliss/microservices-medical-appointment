@@ -6,11 +6,14 @@ Ce répertoire contient les diagrammes UML simplifiés du projet, créés avec P
 
 ### 1. Architecture Système (`1-architecture-systeme.puml`)
 Vue d'ensemble de l'architecture microservices:
-- 3 microservices backend (Docteur, RDV, Notification)
-- Frontend React
-- Bases de données H2
-- Services externes (SMS, Email)
-- Communications entre services
+- API Gateway (Spring Cloud Gateway) - port 8080
+- Eureka Server (Service Discovery) - port 8761
+- 4 microservices backend (Auth, Docteur, RDV, Notification)
+- Frontend React - port 3000
+- Bases de données PostgreSQL (authdb, docteurdb, rdvdb)
+- RabbitMQ pour messaging asynchrone
+- Service externe Resend pour emails
+- Communications via Feign Client et RabbitMQ
 
 ---
 
@@ -24,28 +27,35 @@ Entités principales du système:
 
 ### 3. Séquence - Création de Rendez-vous (`3-sequence-creation-rdv.puml`)
 Flux de création d'un rendez-vous:
-1. Consultation des docteurs disponibles
-2. Sélection et création du rendez-vous
-3. Validation via Feign Client
-4. Sauvegarde en base de données
-5. Envoi de notification
+1. Consultation des docteurs via API Gateway
+2. Sélection docteur et remplissage formulaire
+3. Création via API Gateway -> RDV Service
+4. Validation docteur via Feign Client
+5. Sauvegarde en base PostgreSQL
+6. Publication d'événement dans RabbitMQ
+7. Notification Service consomme l'événement de manière asynchrone
+8. Envoi email via Resend
 
 ---
 
 ### 4. Séquence - Consultation de Rendez-vous (`4-sequence-consultation-rdv.puml`)
-Flux de consultation d'un rendez-vous:
-1. Récupération des données du rendez-vous
-2. Enrichissement avec informations du docteur
-3. Affichage complet au patient
+Flux de consultation des rendez-vous:
+1. Requête via API Gateway
+2. Récupération de tous les rendez-vous depuis PostgreSQL
+3. Enrichissement avec informations docteur via Feign Client
+4. Retour via API Gateway
+5. Affichage dans le frontend React
 
 ---
 
 ### 5. Classes - RDV Service (`5-classes-rdv-service.puml`)
 Structure du service RDV:
 - Entité Rdv
-- RdvRepository
-- RdvController
-- DocteurClient (Feign)
+- RdvRepository (Spring Data JPA)
+- RdvController (REST API)
+- DocteurClient (Feign Client)
+- AppointmentEventPublisher (RabbitMQ Publisher)
+- AppointmentEvent (événements RDV)
 
 ---
 
@@ -60,18 +70,47 @@ Structure du service Docteur:
 ### 7. Classes - Notification Service (`7-classes-notification-service.puml`)
 Structure du service Notification:
 - NotificationRequest/Response
-- NotificationController
 - NotificationService
-- WebClient pour SMS/Email
+- AppointmentEventListener (RabbitMQ Consumer)
+- Integration avec Resend pour emails
 
 ---
 
-### 8. Flux de Données (`9-flux-donnees.puml`)
-Flux de données principal:
-- Consultation des docteurs
-- Création de rendez-vous
-- Notifications
-- Étapes numérotées
+### 8. Architecture - Interactions Microservices (`8-architecture-interactions.puml`)
+Interaction détaillée des microservices:
+- API Gateway (port 8080) avec filtre JWT global
+- Service Discovery Eureka (port 8761)
+- Auth Service (port 8084), Docteur (8083), RDV (8082), Notification (8085)
+- Bases de données PostgreSQL (authdb, docteurdb, rdvdb)
+- RabbitMQ pour messaging asynchrone
+- Resend pour envoi d'emails
+
+---
+
+### 9. Flux de Données (`9-flux-donnees.puml`)
+Flux de données principal avec étapes numérotées:
+1. Consultation des docteurs via API Gateway -> Docteur Service -> PostgreSQL
+2. Création de rendez-vous via API Gateway -> RDV Service
+3. Validation via Feign Client
+4. Sauvegarde PostgreSQL
+5. Publication RabbitMQ
+6. Notification asynchrone via Resend
+
+---
+
+### 10. Classes - Auth Service (`10-classes-auth-service.puml`)
+Structure du service d'authentification:
+- User, LoginRequest/Response, RegisterRequest
+- AuthService, JwtUtil, UserRepository
+- Endpoints login/validate/me
+
+---
+
+### 11. Classes - API Gateway (`11-classes-api-gateway.puml`)
+Structure de la passerelle:
+- Filtre global JwtAuthenticationFilter
+- Configuration CORS
+- Routage vers Auth/Docteur/RDV/Notification
 
 ---
 

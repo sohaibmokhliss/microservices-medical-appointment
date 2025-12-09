@@ -5,19 +5,22 @@ title Séquence - Consultation de Rendez-vous
 
 actor Patient
 participant Frontend
+participant "API Gateway" as GW
 participant "RDV Service" as RDV
-database "Base RDV" as DB
+database "PostgreSQL\nrdvdb" as DB
 participant "Docteur Service" as DOC
 
-Patient -> Frontend : Voir détails RDV
-Frontend -> RDV : GET /rdv/{id}
-RDV -> DB : Lire RDV
-DB --> RDV : Données RDV
+Patient -> Frontend : Voir mes rendez-vous
+Frontend -> GW : GET /api/rdv
+GW -> RDV : GET /rdv
+RDV -> DB : Lire tous RDV
+DB --> RDV : Liste RDV
 
-RDV -> DOC : GET /docteurs/{id}
+RDV -> DOC : GET /docteurs/{id} (Feign)
 DOC --> RDV : Données docteur
 
-RDV --> Frontend : RDV + Docteur
-Frontend --> Patient : Affichage complet
+RDV --> GW : RDV + Docteur
+GW --> Frontend : Liste complète
+Frontend --> Patient : Affichage rendez-vous
 
 @enduml

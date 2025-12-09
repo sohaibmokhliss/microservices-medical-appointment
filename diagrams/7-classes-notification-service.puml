@@ -13,27 +13,49 @@ class NotificationRequest {
 class NotificationResponse {
     success : boolean
     message : String
+    timestamp : String
 }
 
-class NotificationController {
-    + sendNotification()
+class AppointmentEvent {
+    id : Long
+    docteurId : Long
+    patientEmail : String
+    dateHeure : LocalDateTime
+    motif : String
+}
+
+class AppointmentEventListener {
+    + handleAppointmentCreated(event)
+    + handleAppointmentUpdated(event)
+    + handleAppointmentCancelled(event)
 }
 
 class NotificationService {
-    + sendNotification()
-    - sendSMS()
-    - sendEmail()
+    + sendNotification(request)
+    - sendSms(destination, message)
+    - sendEmail(destination, subject, message)
 }
 
-NotificationController --> NotificationService
-NotificationController --> NotificationRequest
-NotificationController --> NotificationResponse
+class ResendClient {
+    + sendEmail(from, to, subject, html)
+}
+
+AppointmentEventListener --> AppointmentEvent
+AppointmentEventListener --> NotificationService
 NotificationService --> NotificationRequest
 NotificationService --> NotificationResponse
+NotificationService --> ResendClient
 
-note right of NotificationService
-  Utilise WebClient
-  pour SMS et Email
+note right of AppointmentEventListener
+  @RabbitListener
+  Consomme les événements
+  RDV depuis RabbitMQ
+end note
+
+note right of ResendClient
+  Client HTTP pour
+  l'API Resend
+  Envoi d'emails réels
 end note
 
 @enduml

@@ -4,29 +4,50 @@ skinparam backgroundColor white
 skinparam component {
     BackgroundColor<<frontend>> LightBlue
     BackgroundColor<<service>> LightGreen
+    BackgroundColor<<gateway>> SkyBlue
+    BackgroundColor<<infra>> LightGray
     BackgroundColor<<database>> LightYellow
+    BackgroundColor<<queue>> Orange
 }
 
 title Architecture du Système
 
 component "React\nFrontend\n:3000" <<frontend>> as frontend
 
-component "Docteur\nService\n:8081" <<service>> as docteur
+component "API Gateway\n:8080" <<gateway>> as gateway
+component "Eureka Server\n:8761" <<infra>> as eureka
+
+component "Auth\nService\n:8084" <<service>> as auth
+component "Docteur\nService\n:8083" <<service>> as docteur
 component "RDV\nService\n:8082" <<service>> as rdv
-component "Notification\nService\n:8083" <<service>> as notif
+component "Notification\nService\n:8085" <<service>> as notif
 
-database "H2\ndocteurdb" <<database>> as db1
-database "H2\nrdvdb" <<database>> as db2
+database "PostgreSQL\nauthdb" <<database>> as db0
+database "PostgreSQL\ndocteurdb" <<database>> as db1
+database "PostgreSQL\nrdvdb" <<database>> as db2
 
-cloud "SMS/Email" as external
+queue "RabbitMQ" <<queue>> as rabbit
 
-frontend --> docteur : API REST
-frontend --> rdv : API REST
-frontend --> notif : API REST
+cloud "Email (Resend)" as external
+
+frontend --> gateway : HTTP/HTTPS
+gateway --> auth : JWT Auth
+gateway --> docteur : API REST
+gateway --> rdv : API REST
 
 rdv --> docteur : Feign Client
+rdv --> rabbit : Publish Events
+rabbit --> notif : Consume Events
+
+auth --> db0
 docteur --> db1
 rdv --> db2
 notif --> external
+
+auth --> eureka : Register
+docteur --> eureka : Register
+rdv --> eureka : Register
+notif --> eureka : Register
+gateway --> eureka : Discovery
 
 @enduml

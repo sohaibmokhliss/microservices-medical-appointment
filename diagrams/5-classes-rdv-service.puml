@@ -7,36 +7,76 @@ class Rdv {
     id : Long
     docteurId : Long
     patientNom : String
-    dateHeure : DateTime
+    patientPrenom : String
+    patientEmail : String
+    patientTelephone : String
+    dateHeure : LocalDateTime
     motif : String
     statut : String
 }
 
 interface RdvRepository {
     + findAll()
-    + findById()
-    + save()
-    + delete()
+    + findById(id)
+    + findByDocteurId(docteurId)
+    + save(rdv)
+    + delete(rdv)
 }
 
 class RdvController {
     + getAllRdv()
-    + createRdv()
-    + updateRdv()
-    + deleteRdv()
+    + getRdvById(id)
+    + getRdvByDocteur(docteurId)
+    + createRdv(rdv)
+    + updateRdv(id, rdv)
+    + deleteRdv(id)
+}
+
+class DocteurDTO {
+    id : Long
+    nom : String
+    prenom : String
+    specialite : String
+    email : String
+    telephone : String
 }
 
 interface DocteurClient {
-    + getDocteur(id)
+    + getDocteur(id) : DocteurDTO
+}
+
+class AppointmentEventPublisher {
+    + publishAppointmentCreated(rdv)
+    + publishAppointmentUpdated(rdv)
+    + publishAppointmentCancelled(rdv)
+}
+
+class AppointmentEvent {
+    id : Long
+    docteurId : Long
+    patientEmail : String
+    dateHeure : LocalDateTime
+    motif : String
 }
 
 RdvController --> RdvRepository
 RdvController --> DocteurClient
+RdvController --> AppointmentEventPublisher
 RdvRepository --> Rdv
+DocteurClient --> DocteurDTO
+AppointmentEventPublisher --> AppointmentEvent
 
 note right of DocteurClient
-  @FeignClient
-  Appel vers Docteur Service
+  @FeignClient(name="docteur-service")
+  Récupération des métadonnées
+  des docteurs pour enrichir
+  les réponses RDV
+end note
+
+note right of AppointmentEventPublisher
+  Publie les événements RDV
+  dans RabbitMQ pour
+  notifications asynchrones
 end note
 
 @enduml

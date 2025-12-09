@@ -18,22 +18,24 @@ public class CorsConfig implements RepositoryRestConfigurer {
         // Expose entity IDs
         config.exposeIdsFor(Docteur.class);
 
-        cors.addMapping("/**")
-                .allowedOrigins("http://localhost:3000")
-                .allowedMethods("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS")
-                .allowedHeaders("*")
-                .allowCredentials(true);
+        // CORS is handled by API Gateway - disabled here to prevent conflicts
+        // cors.addMapping("/**")
+        //         .allowedOrigins("http://localhost:3000")
+        //         .allowedMethods("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS")
+        //         .allowedHeaders("*")
+        //         .allowCredentials(true);
     }
 
-    @Bean
-    public CorsFilter corsFilter() {
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        CorsConfiguration config = new CorsConfiguration();
-        config.setAllowCredentials(true);
-        config.addAllowedOrigin("http://localhost:3000");
-        config.addAllowedHeader("*");
-        config.addAllowedMethod("*");
-        source.registerCorsConfiguration("/**", config);
-        return new CorsFilter(source);
-    }
+    // CORS is handled by API Gateway - this filter is disabled to prevent conflicts
+    // @Bean
+    // public CorsFilter corsFilter() {
+    //     UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+    //     CorsConfiguration config = new CorsConfiguration();
+    //     config.setAllowCredentials(true);
+    //     config.addAllowedOrigin("http://localhost:3000");
+    //     config.addAllowedHeader("*");
+    //     config.addAllowedMethod("*");
+    //     source.registerCorsConfiguration("/**", config);
+    //     return new CorsFilter(source);
+    // }
 }

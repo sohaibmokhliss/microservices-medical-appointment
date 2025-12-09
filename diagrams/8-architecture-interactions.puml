@@ -1,0 +1,62 @@
+@startuml Architecture Interactions
+
+skinparam backgroundColor white
+skinparam componentStyle rectangle
+skinparam component {
+    BackgroundColor<<gateway>> LightBlue
+    BackgroundColor<<service>> LightGreen
+    BackgroundColor<<infra>> LightGray
+    BackgroundColor<<database>> LightYellow
+}
+
+title Architecture générale - Interactions entre microservices
+
+actor "Utilisateur / React Frontend\n(port 3000)" as user
+
+component "API Gateway\n(Spring Cloud Gateway)\n:8080" <<gateway>> as gateway
+component "Auth Service\nJWT / Spring Security\n:8084" <<service>> as auth
+component "Docteur Service\nSpring Data REST\n:8081" <<service>> as docteur
+component "RDV Service\nFeign Client\n:8082" <<service>> as rdv
+component "Notification Service\nWebClient\n:8083" <<service>> as notif
+
+database "PostgreSQL\nauthdb" <<database>> as dbAuth
+database "PostgreSQL\ndocteurdb" <<database>> as dbDoc
+database "PostgreSQL\nrdvdb" <<database>> as dbRdv
+
+queue "RabbitMQ" <<infra>> as rabbit
+cloud "Email (Resend)" as external
+component "Eureka Server\nService Discovery\n:8761" <<infra>> as eureka
+
+user --> gateway : HTTP(S) + JWT
+gateway --> auth : /api/auth/**
+gateway --> docteur : /api/docteurs/**
+gateway --> rdv : /api/rdv/**
+gateway --> notif : /api/notifications/**
+
+rdv --> docteur : Feign (serviceId)
+rdv --> rabbit : Publish Events
+rabbit --> notif : Consume Events
+
+auth --> dbAuth
+docteur --> dbDoc
+rdv --> dbRdv
+notif --> external : Email API
+
+auth --> eureka : Enregistrement
+docteur --> eureka : Enregistrement
+rdv --> eureka : Enregistrement
+notif --> eureka : Enregistrement
+gateway --> eureka : Découverte/LoadBalancing
+
+note right of gateway
+  Filtre global JWT
+  CORS global
+  Routage vers microservices
+end note
+
+note bottom of rdv
+  Récupère les docteurs via Feign
+  Expose CRUD des rendez-vous
+end note
+
+@enduml

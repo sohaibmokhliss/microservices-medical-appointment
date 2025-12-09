@@ -5,23 +5,30 @@ title Flux de Données Principal
 
 actor Patient
 participant Frontend
+participant "API Gateway" as GW
 participant "RDV Service" as RDV
 participant "Docteur Service" as DOC
-database "Bases H2" as DB
+database "PostgreSQL" as DB
+queue RabbitMQ
 participant "Notification" as NOTIF
 
 Patient -> Frontend : 1. Consulter docteurs
-Frontend -> DOC : 2. GET /docteurs
-DOC -> DB : 3. Lire
-DB --> Frontend : 4. Liste docteurs
+Frontend -> GW : 2. GET /api/docteurs
+GW -> DOC : 3. GET /docteurs
+DOC -> DB : 4. Lire docteurdb
+DB --> GW : 5. Liste docteurs
+GW --> Frontend : 6. Liste docteurs
 
-Patient -> Frontend : 5. Créer RDV
-Frontend -> RDV : 6. POST /rdv
-RDV -> DOC : 7. Valider docteur
-RDV -> DB : 8. Sauvegarder
-RDV --> Frontend : 9. Succès
+Patient -> Frontend : 7. Créer RDV
+Frontend -> GW : 8. POST /api/rdv
+GW -> RDV : 9. POST /rdv
+RDV -> DOC : 10. Valider docteur (Feign)
+RDV -> DB : 11. Sauvegarder rdvdb
+RDV -> RabbitMQ : 12. Publier Event
+RDV --> GW : 13. Succès
+GW --> Frontend : 14. RDV créé
 
-Frontend -> NOTIF : 10. Envoyer email
-NOTIF --> Frontend : 11. Confirmé
+RabbitMQ --> NOTIF : 15. Consommer Event (async)
+NOTIF --> Patient : 16. Email envoyé
 
 @enduml
