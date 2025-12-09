@@ -286,7 +286,7 @@ L'application sera disponible sur http://localhost:3000
 
 **Compte Admin par défaut:**
 - Username: `admin`
-- Password: `admin`
+- Password: `admin123`
 
 **Fonctionnalités Admin:**
 1. Se connecter via le panneau d'authentification
