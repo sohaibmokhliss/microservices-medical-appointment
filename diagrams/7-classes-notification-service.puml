@@ -1,0 +1,39 @@
+@startuml Classes Notification Service
+
+skinparam backgroundColor white
+title Notification Service - Structure
+
+class NotificationRequest {
+    type : String
+    destination : String
+    subject : String
+    message : String
+}
+
+class NotificationResponse {
+    success : boolean
+    message : String
+}
+
+class NotificationController {
+    + sendNotification()
+}
+
+class NotificationService {
+    + sendNotification()
+    - sendSMS()
+    - sendEmail()
+}
+
+NotificationController --> NotificationService
+NotificationController --> NotificationRequest
+NotificationController --> NotificationResponse
+NotificationService --> NotificationRequest
+NotificationService --> NotificationResponse
+
+note right of NotificationService
+  Utilise WebClient
+  pour SMS et Email
+end note
+
+@enduml

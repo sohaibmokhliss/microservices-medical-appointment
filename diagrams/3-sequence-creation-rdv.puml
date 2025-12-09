@@ -1,0 +1,29 @@
+@startuml Création de Rendez-vous
+
+skinparam backgroundColor white
+title Séquence - Création de Rendez-vous
+
+actor Patient
+participant Frontend
+participant "RDV Service" as RDV
+participant "Docteur Service" as DOC
+database "Base RDV" as DB
+participant Notification
+
+Patient -> Frontend : Prendre RDV
+Frontend -> DOC : GET /docteurs
+DOC --> Frontend : Liste docteurs
+
+Patient -> Frontend : Sélectionne docteur
+Frontend -> RDV : POST /rdv
+RDV -> DOC : Vérifier docteur (Feign)
+DOC --> RDV : Docteur OK
+
+RDV -> DB : Sauvegarder RDV
+DB --> RDV : RDV créé
+
+RDV --> Frontend : Succès
+Frontend -> Notification : Envoyer email
+Frontend --> Patient : Confirmation
+
+@enduml

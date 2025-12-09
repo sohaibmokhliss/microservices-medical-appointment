@@ -1,0 +1,32 @@
+@startuml Architecture Système
+
+skinparam backgroundColor white
+skinparam component {
+    BackgroundColor<<frontend>> LightBlue
+    BackgroundColor<<service>> LightGreen
+    BackgroundColor<<database>> LightYellow
+}
+
+title Architecture du Système
+
+component "React\nFrontend\n:3000" <<frontend>> as frontend
+
+component "Docteur\nService\n:8081" <<service>> as docteur
+component "RDV\nService\n:8082" <<service>> as rdv
+component "Notification\nService\n:8083" <<service>> as notif
+
+database "H2\ndocteurdb" <<database>> as db1
+database "H2\nrdvdb" <<database>> as db2
+
+cloud "SMS/Email" as external
+
+frontend --> docteur : API REST
+frontend --> rdv : API REST
+frontend --> notif : API REST
+
+rdv --> docteur : Feign Client
+docteur --> db1
+rdv --> db2
+notif --> external
+
+@enduml

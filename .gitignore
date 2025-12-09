@@ -1,0 +1,29 @@
+# Build directories
+**/target/
+**/build/
+
+# Dependencies
+**/node_modules/
+
+# Logs
+logs/
+*.log
+
+# IDE
+.idea/
+*.iml
+.vscode/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+*.local
+
+# Compiled files
+*.class
+*.jar
+*.war

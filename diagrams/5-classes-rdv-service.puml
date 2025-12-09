@@ -1,0 +1,42 @@
+@startuml Classes RDV Service
+
+skinparam backgroundColor white
+title RDV Service - Structure
+
+class Rdv {
+    id : Long
+    docteurId : Long
+    patientNom : String
+    dateHeure : DateTime
+    motif : String
+    statut : String
+}
+
+interface RdvRepository {
+    + findAll()
+    + findById()
+    + save()
+    + delete()
+}
+
+class RdvController {
+    + getAllRdv()
+    + createRdv()
+    + updateRdv()
+    + deleteRdv()
+}
+
+interface DocteurClient {
+    + getDocteur(id)
+}
+
+RdvController --> RdvRepository
+RdvController --> DocteurClient
+RdvRepository --> Rdv
+
+note right of DocteurClient
+  @FeignClient
+  Appel vers Docteur Service
+end note
+
+@enduml

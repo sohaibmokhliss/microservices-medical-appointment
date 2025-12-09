@@ -1,0 +1,23 @@
+@startuml Consultation de Rendez-vous
+
+skinparam backgroundColor white
+title Séquence - Consultation de Rendez-vous
+
+actor Patient
+participant Frontend
+participant "RDV Service" as RDV
+database "Base RDV" as DB
+participant "Docteur Service" as DOC
+
+Patient -> Frontend : Voir détails RDV
+Frontend -> RDV : GET /rdv/{id}
+RDV -> DB : Lire RDV
+DB --> RDV : Données RDV
+
+RDV -> DOC : GET /docteurs/{id}
+DOC --> RDV : Données docteur
+
+RDV --> Frontend : RDV + Docteur
+Frontend --> Patient : Affichage complet
+
+@enduml

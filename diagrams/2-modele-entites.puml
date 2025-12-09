@@ -1,0 +1,33 @@
+@startuml Modèle de Données
+
+skinparam backgroundColor white
+title Entités du Système
+
+entity Docteur {
+    * id : Long
+    --
+    nom : String
+    prenom : String
+    specialite : String
+    email : String
+    telephone : String
+}
+
+entity Rdv {
+    * id : Long
+    --
+    docteurId : Long
+    --
+    patientNom : String
+    patientPrenom : String
+    patientEmail : String
+    patientTelephone : String
+    --
+    dateHeure : DateTime
+    motif : String
+    statut : String
+}
+
+Rdv }o--|| Docteur : référence
+
+@enduml

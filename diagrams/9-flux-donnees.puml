@@ -1,0 +1,27 @@
+@startuml Flux de Données
+
+skinparam backgroundColor white
+title Flux de Données Principal
+
+actor Patient
+participant Frontend
+participant "RDV Service" as RDV
+participant "Docteur Service" as DOC
+database "Bases H2" as DB
+participant "Notification" as NOTIF
+
+Patient -> Frontend : 1. Consulter docteurs
+Frontend -> DOC : 2. GET /docteurs
+DOC -> DB : 3. Lire
+DB --> Frontend : 4. Liste docteurs
+
+Patient -> Frontend : 5. Créer RDV
+Frontend -> RDV : 6. POST /rdv
+RDV -> DOC : 7. Valider docteur
+RDV -> DB : 8. Sauvegarder
+RDV --> Frontend : 9. Succès
+
+Frontend -> NOTIF : 10. Envoyer email
+NOTIF --> Frontend : 11. Confirmé
+
+@enduml

@@ -1,0 +1,30 @@
+@startuml Classes Docteur Service
+
+skinparam backgroundColor white
+title Docteur Service - Structure
+
+class Docteur {
+    id : Long
+    nom : String
+    prenom : String
+    specialite : String
+    email : String
+    telephone : String
+}
+
+interface DocteurRepository {
+    + findAll()
+    + findById()
+    + save()
+    + delete()
+}
+
+DocteurRepository --> Docteur
+
+note right of DocteurRepository
+  @RepositoryRestResource
+  API REST auto-générée
+  (Spring Data REST)
+end note
+
+@enduml
