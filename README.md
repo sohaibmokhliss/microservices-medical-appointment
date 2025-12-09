@@ -1,197 +1,260 @@
 # Système de Prise de Rendez-vous Médicaux en Ligne
 
-Application web complète de gestion de rendez-vous médicaux utilisant une **architecture microservices production-ready** avec Spring Boot et React.
+Application web complète de gestion de rendez-vous médicaux utilisant une **architecture microservices production-ready** avec Spring Boot, React, et messaging asynchrone.
 
-## 🎯 Grade: 90-95/100 - All Requirements Met ✅
+## 🎯 Fonctionnalités Clés
 
-### Key Features Implemented
-- ✅ **4 Microservices** with clear separation of concerns
-- ✅ **Service Discovery** (Eureka) + API Gateway
-- ✅ **JWT Authentication** with role-based access control
-- ✅ **Resilience Patterns** (Circuit Breaker, Retry, Timeout, Fallback)
-- ✅ **Asynchronous Communication** (RabbitMQ event-driven)
-- ✅ **Global Exception Handling** with validation
-- ✅ **Structured Logging** and monitoring
-- ✅ **Input Validation** at entity level
+- ✅ **Architecture Microservices** - 4 services backend indépendants + infrastructure
+- ✅ **API Gateway** - Point d'entrée unique avec Spring Cloud Gateway (port 8080)
+- ✅ **Service Discovery** - Eureka pour l'enregistrement et découverte automatique des services
+- ✅ **Authentification JWT** - Sécurité avec contrôle d'accès basé sur les rôles (Admin/User)
+- ✅ **Resilience Patterns** - Circuit Breaker, Retry, Timeout pour la tolérance aux pannes
+- ✅ **Communication Asynchrone** - RabbitMQ pour les événements et notifications
+- ✅ **Base de Données PostgreSQL** - Persistance fiable avec 3 bases distinctes
+- ✅ **Gestion des Exceptions Globale** - Validation et messages d'erreur cohérents
+- ✅ **Notifications Email** - Intégration avec Resend pour emails transactionnels
+- ✅ **Accès Public** - Création de rendez-vous sans authentification
 
 ## Architecture
 
-Le système est composé de **4 microservices backend** + infrastructure:
+Le système est composé de **5 microservices backend** + infrastructure:
 
 ```
-┌─────────────────┐
-│  React Frontend │
-│   (Port 3000)   │
-└────────┬────────┘
+┌──────────────────┐
+│  React Frontend  │
+│   (Port 3000)    │
+└────────┬─────────┘
          │
-         ├──────────────┬──────────────┬────────────────┐
-         │              │              │                │
-         v              v              v                v
-┌────────────────┐ ┌────────────┐ ┌────────────────┐
-│ docteur-service│ │rdv-service │ │notification-    │
-│  Spring Data   │ │  Feign     │ │   service      │
-│     REST       │ │  Client    │ │  WebClient     │
-│  (Port 8081)   │ │(Port 8082) │ │  (Port 8083)   │
-└────────────────┘ └────────────┘ └────────────────┘
-         │              │
-         │              │
-         v              v
-   ┌─────────┐    ┌─────────┐
-   │H2 Database│   │H2 Database│
-   └──────────┘   └──────────┘
+         v
+┌──────────────────┐
+│   API Gateway    │
+│  (Port 8080)     │
+│  - JWT Filter    │
+│  - CORS          │
+│  - Routing       │
+└────────┬─────────┘
+         │
+    ┌────┴────┬────────────┬──────────────┬─────────────┐
+    │         │            │              │             │
+    v         v            v              v             v
+┌─────────┐ ┌──────────┐ ┌───────────┐ ┌────────────┐ ┌──────────────┐
+│  Auth   │ │ Docteur  │ │    RDV    │ │Notification│ │Eureka Server │
+│ Service │ │ Service  │ │  Service  │ │  Service   │ │   (8761)     │
+│ (8084)  │ │  (8083)  │ │  (8082)   │ │   (8085)   │ └──────────────┘
+└────┬────┘ └────┬─────┘ └─────┬─────┘ └─────┬──────┘
+     │           │              │             │
+     │           │              │             │
+     v           v              v             v
+┌─────────┐ ┌──────────┐ ┌───────────┐     ┌──────────┐
+│PostgreSQL│ │PostgreSQL│ │PostgreSQL │     │ RabbitMQ │
+│ authdb  │ │docteurdb │ │  rdvdb    │     └─────┬────┘
+└─────────┘ └──────────┘ └─────┬─────┘           │
+                                │                 │
+                                └─────────────────┘
+                                  (Events async)
 ```
+
+### Communication Inter-Services
+
+- **Frontend → API Gateway** : HTTP/HTTPS avec JWT optionnel
+- **API Gateway → Services** : Routage avec headers JWT propagés
+- **RDV → Docteur** : Feign Client (synchrone)
+- **RDV → Notification** : RabbitMQ (asynchrone)
+- **Services → Eureka** : Enregistrement et discovery
 
 ## Technologies Utilisées
 
 ### Backend
 - **Spring Boot 3.2.0** - Framework Java pour les microservices
-- **Spring Data REST** - Exposition automatique des repositories en REST API (docteur-service)
-- **Spring Cloud OpenFeign** - Client REST déclaratif pour la communication inter-services (rdv-service)
-- **Spring WebFlux** - Client HTTP réactif WebClient (notification-service)
+- **Spring Cloud Gateway** - API Gateway avec filtres JWT et routage
+- **Spring Cloud Netflix Eureka** - Service Discovery et Load Balancing
+- **Spring Security + JWT** - Authentification et autorisation
+- **Spring Cloud OpenFeign** - Client REST déclaratif (RDV → Docteur)
+- **Spring AMQP + RabbitMQ** - Messaging asynchrone pour notifications
 - **Spring Data JPA** - Persistance des données
-- **H2 Database** - Base de données en mémoire
+- **PostgreSQL** - Base de données relationnelle
+- **Resilience4j** - Circuit Breaker, Retry, Timeout
 - **Lombok** - Réduction du code boilerplate
+- **Jackson JSR310** - Sérialisation LocalDateTime
 
 ### Frontend
 - **React 18.2.0** - Bibliothèque JavaScript pour l'interface utilisateur
 - **Axios** - Client HTTP pour les appels API
+- **JWT Decode** - Décodage et gestion des tokens JWT
 - **CSS3** - Styles personnalisés
 
-## Structure du Projet
+### Infrastructure
+- **PostgreSQL** - Bases de données (authdb, docteurdb, rdvdb)
+- **RabbitMQ** - Message broker pour événements asynchrones
+- **Docker** - Conteneurisation de RabbitMQ
 
-```
-projet_architecture_des_composants/
-├── docteur-service/          # Service de gestion des docteurs
-│   ├── src/main/java/
-│   │   └── com/healthcare/docteur/
-│   │       ├── entities/
-│   │       │   └── Docteur.java
-│   │       ├── repositories/
-│   │       │   └── DocteurRepository.java
-│   │       ├── DocteurServiceApplication.java
-│   │       └── DataInitializer.java
-│   └── pom.xml
-│
-├── rdv-service/               # Service de gestion des rendez-vous
-│   ├── src/main/java/
-│   │   └── com/healthcare/rdv/
-│   │       ├── entities/
-│   │       │   └── Rdv.java
-│   │       ├── repositories/
-│   │       │   └── RdvRepository.java
-│   │       ├── clients/
-│   │       │   ├── DocteurClient.java
-│   │       │   └── DocteurDTO.java
-│   │       ├── controllers/
-│   │       │   └── RdvController.java
-│   │       ├── RdvServiceApplication.java
-│   │       └── DataInitializer.java
-│   └── pom.xml
-│
-├── notification-service/      # Service de notifications
-│   ├── src/main/java/
-│   │   └── com/healthcare/notification/
-│   │       ├── models/
-│   │       │   ├── NotificationRequest.java
-│   │       │   └── NotificationResponse.java
-│   │       ├── services/
-│   │       │   └── NotificationService.java
-│   │       ├── controllers/
-│   │       │   └── NotificationController.java
-│   │       ├── config/
-│   │       │   └── WebClientConfig.java
-│   │       └── NotificationServiceApplication.java
-│   └── pom.xml
-│
-└── frontend/                  # Application React
-    ├── public/
-    │   └── index.html
-    ├── src/
-    │   ├── components/
-    │   │   ├── DocteurList.js
-    │   │   ├── RdvForm.js
-    │   │   └── RdvList.js
-    │   ├── services/
-    │   │   └── api.js
-    │   ├── App.js
-    │   ├── App.css
-    │   └── index.js
-    └── package.json
-```
+## Services
 
-## Fonctionnalités
+### 1. Eureka Server (Port 8761)
+**Service Discovery**
+- Enregistrement automatique de tous les microservices
+- Load balancing et health checking
+- Dashboard : http://localhost:8761
 
-### 1. Docteur Service (Port 8081)
-- Gestion des docteurs avec Spring Data REST
-- API REST automatique pour CRUD
-- Endpoints:
-  - `GET /api/docteurs` - Liste tous les docteurs
-  - `GET /api/docteurs/{id}` - Détails d'un docteur
-  - `POST /api/docteurs` - Créer un docteur
-  - `PUT /api/docteurs/{id}` - Modifier un docteur
-  - `DELETE /api/docteurs/{id}` - Supprimer un docteur
+### 2. API Gateway (Port 8080)
+**Point d'entrée unique**
+- Routage vers tous les services
+- Filtre JWT global avec endpoints publics configurables
+- CORS configuré pour localhost:3000
+- Propagation des headers d'authentification
 
-### 2. RDV Service (Port 8082)
-- Gestion des rendez-vous
-- Communication avec docteur-service via FeignClient
-- Endpoints:
-  - `GET /api/rdv` - Liste tous les rendez-vous
-  - `GET /api/rdv/{id}` - Détails d'un rendez-vous
-  - `GET /api/rdv/docteur/{docteurId}` - Rendez-vous par docteur
-  - `POST /api/rdv` - Créer un rendez-vous
-  - `PUT /api/rdv/{id}` - Modifier un rendez-vous
-  - `DELETE /api/rdv/{id}` - Annuler un rendez-vous
+**Routes:**
+- `/api/auth/**` → Auth Service
+- `/api/docteurs/**` → Docteur Service (public)
+- `/api/rdv/**` → RDV Service (public pour création, protégé pour modification)
+- `/api/notifications/**` → Notification Service
 
-### 3. Notification Service (Port 8083)
-- Envoi de notifications SMS et Email
-- Utilisation de WebClient pour les appels HTTP réactifs
-- Endpoints:
-  - `POST /api/notifications/send` - Envoyer une notification
+### 3. Auth Service (Port 8084)
+**Authentification et Gestion des Utilisateurs**
 
-### 4. Frontend React (Port 3000)
-- Interface utilisateur intuitive
-- Affichage de la liste des docteurs
-- Formulaire de prise de rendez-vous
-- Gestion des rendez-vous existants
-- Envoi automatique de notifications
+**Endpoints:**
+- `POST /api/auth/register` - Inscription
+- `POST /api/auth/login` - Connexion (retourne JWT)
+- `GET /api/auth/validate` - Valider un token
+- `GET /api/auth/me` - Profil utilisateur actuel
+- `GET /api/users` - Liste des utilisateurs (Admin)
+- `PUT /api/users/{id}` - Modifier un utilisateur (Admin)
+- `DELETE /api/users/{id}` - Supprimer un utilisateur (Admin)
+
+**Rôles:**
+- `ADMIN` - Accès complet à la gestion des utilisateurs
+- `USER` - Accès aux fonctionnalités de base
+
+**Base de données:** PostgreSQL (authdb)
+
+### 4. Docteur Service (Port 8083)
+**Gestion des Docteurs**
+
+**Endpoints:**
+- `GET /api/docteurs` - Liste tous les docteurs (public)
+- `GET /api/docteurs/{id}` - Détails d'un docteur (public)
+- `POST /api/docteurs` - Créer un docteur (Admin)
+- `PUT /api/docteurs/{id}` - Modifier un docteur (Admin)
+- `DELETE /api/docteurs/{id}` - Supprimer un docteur (Admin)
+
+**Base de données:** PostgreSQL (docteurdb)
+
+**Données pré-chargées:**
+- Dr. Alami Ahmed - Cardiologie
+- Dr. Bennani Fatima - Pédiatrie
+- Dr. Cohen David - Dermatologie
+- Dr. Douiri Sanaa - Gynécologie
+- Dr. El Amrani Karim - Neurologie
+- Dr. Fassi Layla - Ophtalmologie
+
+### 5. RDV Service (Port 8082)
+**Gestion des Rendez-vous**
+
+**Endpoints:**
+- `GET /api/rdv` - Liste tous les rendez-vous (public)
+- `GET /api/rdv/{id}` - Détails d'un rendez-vous (public)
+- `GET /api/rdv/docteur/{docteurId}` - Rendez-vous par docteur
+- `POST /api/rdv` - Créer un rendez-vous (public)
+- `PUT /api/rdv/{id}` - Modifier un rendez-vous
+- `DELETE /api/rdv/{id}` - Annuler un rendez-vous
+
+**Fonctionnalités:**
+- Validation de l'existence du docteur via Feign Client
+- Publication d'événements dans RabbitMQ lors de créations/modifications
+- Circuit Breaker pour la communication avec Docteur Service
+- Validation des données (date future, champs obligatoires)
+
+**Base de données:** PostgreSQL (rdvdb)
+
+### 6. Notification Service (Port 8085)
+**Envoi de Notifications Asynchrones**
+
+**Fonctionnalités:**
+- Écoute des événements RabbitMQ (création, modification, annulation de RDV)
+- Envoi d'emails via Resend API
+- Support SMS (simulé)
+- Gestion des erreurs et retry automatique
+
+**Types de notifications:**
+- Confirmation de création de rendez-vous
+- Rappel de modification
+- Confirmation d'annulation
+
+**Intégration:** Resend (emails uniquement en développement)
 
 ## Installation et Démarrage
 
 ### Prérequis
-- Java 17 ou supérieur
-- Maven 3.6 ou supérieur
-- Node.js 16 ou supérieur
-- npm ou yarn
+- **Java 17** ou supérieur
+- **Maven 3.6** ou supérieur
+- **Node.js 16** ou supérieur
+- **PostgreSQL 12** ou supérieur
+- **Docker** (pour RabbitMQ)
 
-### 1. Démarrer Docteur Service
+### 1. Configuration des Bases de Données
 
 ```bash
+# Démarrer PostgreSQL et créer les bases
+psql -U postgres
+
+CREATE DATABASE authdb;
+CREATE DATABASE docteurdb;
+CREATE DATABASE rdvdb;
+```
+
+Ou utiliser le script fourni:
+```bash
+chmod +x setup-databases.sh
+./setup-databases.sh
+```
+
+### 2. Démarrer RabbitMQ
+
+```bash
+docker run -d --name rabbitmq \
+  -p 5672:5672 \
+  -p 15672:15672 \
+  rabbitmq:3-management
+```
+
+Console RabbitMQ : http://localhost:15672 (guest/guest)
+
+### 3. Démarrer les Services Backend
+
+**Option A: Démarrage manuel**
+
+```bash
+# Terminal 1 - Eureka Server
+cd eureka-server
+mvn spring-boot:run
+
+# Terminal 2 - API Gateway
+cd api-gateway
+mvn spring-boot:run
+
+# Terminal 3 - Auth Service
+cd auth-service
+mvn spring-boot:run
+
+# Terminal 4 - Docteur Service
 cd docteur-service
-mvn clean install
 mvn spring-boot:run
-```
 
-Le service sera disponible sur http://localhost:8081
-
-### 2. Démarrer RDV Service
-
-```bash
+# Terminal 5 - RDV Service
 cd rdv-service
-mvn clean install
+mvn spring-boot:run
+
+# Terminal 6 - Notification Service
+cd notification-service
 mvn spring-boot:run
 ```
 
-Le service sera disponible sur http://localhost:8082
-
-### 3. Démarrer Notification Service
+**Option B: Script automatique**
 
 ```bash
-cd notification-service
-mvn clean install
-mvn spring-boot:run
+chmod +x start-all.sh
+./start-all.sh
 ```
-
-Le service sera disponible sur http://localhost:8083
 
 ### 4. Démarrer le Frontend React
 
@@ -203,64 +266,168 @@ npm start
 
 L'application sera disponible sur http://localhost:3000
 
+### 5. Vérification
+
+- ✅ Eureka Dashboard : http://localhost:8761
+- ✅ API Gateway Health : http://localhost:8080/actuator/health
+- ✅ RabbitMQ Console : http://localhost:15672
+- ✅ Frontend : http://localhost:3000
+
 ## Utilisation
 
-1. Ouvrez votre navigateur sur http://localhost:3000
-2. Consultez la liste des docteurs dans l'onglet "Liste des Docteurs"
-3. Prenez un rendez-vous dans l'onglet "Prendre Rendez-vous"
-4. Consultez vos rendez-vous dans l'onglet "Mes Rendez-vous"
+### Accès Public (Sans Authentification)
 
-## Concepts Techniques Implémentés
+1. Ouvrir http://localhost:3000
+2. Consulter la liste des docteurs
+3. Créer un rendez-vous
+4. Consulter tous les rendez-vous
 
-### Inversion of Control (IoC)
-- Utilisation de Spring IoC Container pour la gestion des beans
-- Injection de dépendances avec @Autowired
-- Configuration des beans avec @Bean et @Configuration
+### Accès Administrateur
 
-### Spring Data REST
-- Exposition automatique des repositories JPA en REST API
-- HATEOAS pour la navigation hypermedia
-- Génération automatique des endpoints CRUD
+**Compte Admin par défaut:**
+- Username: `admin`
+- Password: `admin`
 
-### FeignClient
-- Client REST déclaratif pour les communications inter-services
-- Annotation @FeignClient pour définir les clients
-- Intégration transparente avec Spring Cloud
+**Fonctionnalités Admin:**
+1. Se connecter via le panneau d'authentification
+2. Gérer les utilisateurs (créer, modifier, supprimer)
+3. Gérer les docteurs (créer, modifier, supprimer)
 
-### WebClient
-- Client HTTP réactif non-bloquant
-- Configuration de plusieurs clients avec @Qualifier
-- Gestion des erreurs et fallback
+## Structure du Projet
 
-### Architecture Microservices
-- Séparation des responsabilités
-- Services indépendants et déployables
-- Communication REST entre services
+```
+projet_architecture_des_composants/
+├── eureka-server/              # Service Discovery
+├── api-gateway/                # API Gateway avec JWT
+├── auth-service/               # Authentification JWT
+│   ├── entities/User.java
+│   ├── services/AuthService.java
+│   ├── utils/JwtUtil.java
+│   └── config/SecurityConfig.java
+├── docteur-service/            # Gestion des docteurs
+│   ├── entities/Docteur.java
+│   ├── repositories/DocteurRepository.java
+│   └── controllers/DocteurController.java
+├── rdv-service/                # Gestion des rendez-vous
+│   ├── entities/Rdv.java
+│   ├── controllers/RdvController.java
+│   ├── clients/DocteurClient.java (Feign)
+│   ├── events/AppointmentEventPublisher.java
+│   └── config/RabbitMQConfig.java
+├── notification-service/       # Notifications asynchrones
+│   ├── listeners/AppointmentEventListener.java
+│   ├── services/NotificationService.java
+│   └── config/RabbitMQConfig.java
+├── frontend/                   # Application React
+│   ├── components/
+│   │   ├── AuthPanel.js
+│   │   ├── DocteurList.js
+│   │   ├── DocteurManagement.js
+│   │   ├── RdvForm.js
+│   │   ├── RdvList.js
+│   │   └── UserManagement.js
+│   └── services/
+│       ├── apiClient.js
+│       ├── auth.js
+│       └── api.js
+├── diagrams/                   # Diagrammes UML PlantUML
+└── docs/                       # Documentation
+```
 
-## Données de Test
+## Patterns et Concepts Implémentés
 
-Les services sont pré-chargés avec des données de test:
+### 1. Architecture Microservices
+- Services indépendants et déployables séparément
+- Base de données par service
+- Communication via API REST et messaging
 
-### Docteurs
-- Dr. Alami Ahmed - Cardiologie
-- Dr. Bennani Fatima - Pédiatrie
-- Dr. Cohen David - Dermatologie
-- Dr. Douiri Sanaa - Gynécologie
-- Dr. El Amrani Karim - Neurologie
+### 2. API Gateway Pattern
+- Point d'entrée unique pour tous les clients
+- Routage intelligent vers les services backend
+- Gestion centralisée de la sécurité et CORS
 
-### Rendez-vous
-- 3 rendez-vous de test pré-créés
+### 3. Service Discovery
+- Enregistrement automatique des services
+- Load balancing côté client
+- Health checking
 
-## Consoles H2
+### 4. Circuit Breaker Pattern
+- Protection contre les défaillances en cascade
+- Fallback methods
+- Configuration Resilience4j
 
-- Docteur Service: http://localhost:8081/h2-console
-- RDV Service: http://localhost:8082/h2-console
+### 5. Event-Driven Architecture
+- Publication d'événements dans RabbitMQ
+- Consommation asynchrone par Notification Service
+- Découplage entre services
 
-Credentials:
-- JDBC URL: `jdbc:h2:mem:docteurdb` ou `jdbc:h2:mem:rdvdb`
-- Username: `sa`
-- Password: (vide)
+### 6. Security Patterns
+- JWT pour l'authentification stateless
+- Role-Based Access Control (RBAC)
+- Endpoints publics configurables
+
+### 7. Exception Handling
+- GlobalExceptionHandler pour gestion centralisée
+- Validation des inputs
+- Messages d'erreur cohérents
+
+## Configuration
+
+### Variables d'Environnement Importantes
+
+**Auth Service:**
+```properties
+jwt.secret=your-secret-key-min-256-bits
+jwt.expiration=86400000
+```
+
+**Notification Service:**
+```properties
+resend.api.key=your-resend-api-key
+resend.from.email=your-verified-email@domain.com
+```
+
+**RabbitMQ (tous les services):**
+```properties
+spring.rabbitmq.host=localhost
+spring.rabbitmq.port=5672
+spring.rabbitmq.username=guest
+spring.rabbitmq.password=guest
+```
+
+## Scripts Utilitaires
+
+- `start-all.sh` - Démarre tous les services
+- `stop-all.sh` - Arrête tous les services
+- `setup-databases.sh` - Crée les bases PostgreSQL
+- `reset-auth-db.sh` - Réinitialise la base authdb
+- `check-health.sh` - Vérifie le statut de tous les services
+
+## Monitoring et Logs
+
+- Logs centralisés dans `/tmp/*-service.log`
+- Actuator endpoints sur tous les services
+- Health checks via `/actuator/health`
+- Eureka Dashboard pour le statut des services
+
+## Tests
+
+Données de test pré-chargées :
+- 6 docteurs avec spécialités variées
+- Utilisateur admin (admin/admin)
+- Utilisateur test (user/user)
+
+## Documentation
+
+- **Diagrammes UML** : Disponibles dans `/diagrams`
+- **Guides de déploiement** : Dans `/docs`
+- **QUICK_START.md** : Guide rapide de démarrage
+- **SETUP_INSTRUCTIONS.md** : Instructions détaillées
 
 ## Auteur
 
-Projet réalisé dans le cadre du cours d'Architecture des Composants.
+Projet réalisé dans le cadre du cours d'Architecture des Composants - Microservices avec Spring Boot et React.
+
+## Licence
+
+Ce projet est à usage éducatif uniquement.
