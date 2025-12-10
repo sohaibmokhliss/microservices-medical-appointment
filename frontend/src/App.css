@@ -96,6 +96,10 @@ body {
   width: 100%;
 }
 
+.App-main > div > h2 {
+  margin: 28px 0 24px 0;
+}
+
 /* Auth Panel Styles */
 .auth-card {
   display: flex;
@@ -207,6 +211,17 @@ button {
   transition: all 0.3s ease;
 }
 
+.btn {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  transition: all 0.3s ease;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+}
+
 .btn-primary {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
@@ -228,32 +243,22 @@ button {
 }
 
 .btn-secondary {
-  background-color: #f0f3f7;
-  color: #667eea;
-  border: 2px solid #667eea;
-  padding: 10px 24px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 0.95rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
 }
 
 .btn-secondary:hover {
-  background-color: #667eea;
-  color: white;
+  box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+  transform: translateY(-2px);
 }
 
 .btn-danger {
-  background-color: #e74c3c;
+  background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
   color: white;
-  padding: 10px 20px;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 0.95rem;
 }
 
 .btn-danger:hover {
-  background-color: #c0392b;
+  box-shadow: 0 6px 16px rgba(231, 76, 60, 0.4);
   transform: translateY(-2px);
 }
 
@@ -529,13 +534,14 @@ button {
 /* Management Tables */
 .management-container {
   width: 100%;
+  margin-top: 24px;
 }
 
 .management-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 30px;
+  margin-bottom: 45px;
   flex-wrap: wrap;
   gap: 20px;
 }
@@ -647,7 +653,7 @@ button {
 }
 
 .btn-success:hover {
-  box-shadow: 0 4px 12px rgba(39, 174, 96, 0.3);
+  box-shadow: 0 6px 16px rgba(39, 174, 96, 0.4);
   transform: translateY(-2px);
 }
 
@@ -657,7 +663,7 @@ button {
 }
 
 .btn-warning:hover {
-  box-shadow: 0 4px 12px rgba(243, 156, 18, 0.3);
+  box-shadow: 0 6px 16px rgba(243, 156, 18, 0.4);
   transform: translateY(-2px);
 }
 
@@ -901,8 +907,6 @@ button {
 
   .status-badge {
     padding: 6px 12px;
-    font-size: 0.8rem;
-  }
     font-size: 0.8rem;
   }
 }
