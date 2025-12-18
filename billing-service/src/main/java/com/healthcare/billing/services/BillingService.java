@@ -65,17 +65,18 @@ public class BillingService {
 
     @Transactional
     public InvoiceDTO createInvoice(Invoice invoice) {
-        // Calculate pricing based on specialty if pricing exists
+        // Resolve amount: prefer specialty pricing when available, otherwise keep provided amount, fallback to 0
+        BigDecimal resolvedAmount = invoice.getAmount();
         if (invoice.getSpecialty() != null) {
             Pricing pricing = pricingRepository.findBySpecialty(invoice.getSpecialty()).orElse(null);
             if (pricing != null) {
-                invoice.setAmount(pricing.getConsultationFee());
-            } else {
-                invoice.setAmount(DEFAULT_CONSULTATION_FEE);
+                resolvedAmount = pricing.getConsultationFee();
             }
-        } else {
-            invoice.setAmount(DEFAULT_CONSULTATION_FEE);
         }
+        if (resolvedAmount == null) {
+            resolvedAmount = DEFAULT_CONSULTATION_FEE;
+        }
+        invoice.setAmount(resolvedAmount);
 
         // Calculate tax
         BigDecimal taxAmount = invoice.getAmount().multiply(TAX_RATE);

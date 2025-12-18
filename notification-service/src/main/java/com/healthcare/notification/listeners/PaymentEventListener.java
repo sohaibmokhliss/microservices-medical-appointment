@@ -1,6 +1,7 @@
 package com.healthcare.notification.listeners;
 
 import com.healthcare.notification.events.PaymentEvent;
+import com.healthcare.notification.models.NotificationRequest;
 import com.healthcare.notification.services.NotificationService;
 import io.github.resilience4j.retry.annotation.Retry;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -102,10 +103,19 @@ public class PaymentEventListener {
             }
 
             // Send SMS notification
-            notificationService.sendSMS(event.getPatientEmail(), smsMessage);
+            NotificationRequest smsRequest = new NotificationRequest();
+            smsRequest.setType("SMS");
+            smsRequest.setDestination(event.getPatientEmail());
+            smsRequest.setMessage(smsMessage);
+            notificationService.sendNotification(smsRequest);
 
             // Send email notification
-            notificationService.sendEmail(event.getPatientEmail(), emailSubject, emailMessage);
+            NotificationRequest emailRequest = new NotificationRequest();
+            emailRequest.setType("EMAIL");
+            emailRequest.setDestination(event.getPatientEmail());
+            emailRequest.setSubject(emailSubject);
+            emailRequest.setMessage(emailMessage);
+            notificationService.sendNotification(emailRequest);
 
             System.out.println("Payment notification sent successfully to " + event.getPatientEmail());
 

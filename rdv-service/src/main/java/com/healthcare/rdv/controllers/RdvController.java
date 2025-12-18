@@ -38,6 +38,7 @@ public class RdvController {
     private AppointmentEventPublisher eventPublisher;
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('PATIENT', 'DOCTOR', 'ADMIN', 'RECEPTIONIST')")
     public List<Rdv> getAllRdv() {
         log.info("Fetching all appointments");
         List<Rdv> rdvs = rdvRepository.findAll();
