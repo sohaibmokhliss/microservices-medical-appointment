@@ -106,6 +106,14 @@ else
     print_down "DOWN"
 fi
 
+# Check Billing Service
+echo -n "Billing Service (8085):   "
+if check_http "http://localhost:8085/actuator/health"; then
+    print_up "UP (http://localhost:8085)"
+else
+    print_down "DOWN"
+fi
+
 echo ""
 echo "Checking Frontend..."
 echo ""
@@ -148,6 +156,13 @@ if systemctl is-active --quiet postgresql 2>/dev/null || pg_isready -q 2>/dev/nu
     else
         print_warning "NOT FOUND"
     fi
+
+    echo -n "  - billingdb:            "
+    if psql -U postgres -lqt | cut -d \| -f 1 | grep -qw billingdb 2>/dev/null; then
+        print_up "EXISTS"
+    else
+        print_warning "NOT FOUND"
+    fi
 else
     print_down "Not running"
 fi
@@ -181,7 +196,7 @@ echo "========================================"
 SERVICES_UP=0
 SERVICES_DOWN=0
 
-for port in 8761 8080 8084 8081 8082 8083 3000; do
+for port in 8761 8080 8084 8081 8082 8083 8085 3000; do
     if lsof -Pi :$port -sTCP:LISTEN -t >/dev/null 2>&1; then
         ((SERVICES_UP++))
     else
@@ -189,8 +204,8 @@ for port in 8761 8080 8084 8081 8082 8083 3000; do
     fi
 done
 
-echo "Services UP:   $SERVICES_UP / 7"
-echo "Services DOWN: $SERVICES_DOWN / 7"
+echo "Services UP:   $SERVICES_UP / 8"
+echo "Services DOWN: $SERVICES_DOWN / 8"
 
 if [ $SERVICES_DOWN -eq 0 ]; then
     echo ""

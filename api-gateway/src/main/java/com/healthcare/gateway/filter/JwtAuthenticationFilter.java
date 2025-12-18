@@ -31,6 +31,7 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
             "/api/auth/welcome",
             "/api/docteurs",
             "/api/rdv",
+            "/api/billing",
             "/eureka"
     );
 

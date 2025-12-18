@@ -11,6 +11,7 @@ DB_PASSWORD="postgres"
 AUTH_DB="authdb"
 DOCTEUR_DB="docteurdb"
 RDV_DB="rdvdb"
+BILLING_DB="billingdb"
 RABBITMQ_CONTAINER="rabbitmq"
 
 # Colors for output
@@ -151,7 +152,8 @@ print_status "PostgreSQL password configured"
 sudo -u postgres psql -tc "SELECT 1 FROM pg_database WHERE datname = '$AUTH_DB'" | grep -q 1 || sudo -u postgres psql -c "CREATE DATABASE $AUTH_DB;"
 sudo -u postgres psql -tc "SELECT 1 FROM pg_database WHERE datname = '$DOCTEUR_DB'" | grep -q 1 || sudo -u postgres psql -c "CREATE DATABASE $DOCTEUR_DB;"
 sudo -u postgres psql -tc "SELECT 1 FROM pg_database WHERE datname = '$RDV_DB'" | grep -q 1 || sudo -u postgres psql -c "CREATE DATABASE $RDV_DB;"
-print_status "Databases ready: $AUTH_DB, $DOCTEUR_DB, $RDV_DB"
+sudo -u postgres psql -tc "SELECT 1 FROM pg_database WHERE datname = '$BILLING_DB'" | grep -q 1 || sudo -u postgres psql -c "CREATE DATABASE $BILLING_DB;"
+print_status "Databases ready: $AUTH_DB, $DOCTEUR_DB, $RDV_DB, $BILLING_DB"
 
 echo ""
 
@@ -182,7 +184,7 @@ mkdir -p logs
 print_status "Logs directory ready"
 
 # Clean target directories to avoid permission issues
-sudo rm -rf eureka-server/target api-gateway/target auth-service/target docteur-service/target rdv-service/target notification-service/target
+sudo rm -rf eureka-server/target api-gateway/target auth-service/target docteur-service/target rdv-service/target notification-service/target billing-service/target
 print_status "Build directories cleaned"
 
 # Check ports
@@ -192,6 +194,7 @@ check_port 8084
 check_port 8081
 check_port 8082
 check_port 8083
+check_port 8085
 check_port 3000
 
 echo ""
@@ -263,6 +266,16 @@ print_status "Notification Service started - PID: $NOTIFICATION_PID"
 
 sleep 5
 
+# Start Billing Service
+echo "Starting Billing Service on port 8085..."
+cd billing-service
+mvn spring-boot:run > ../logs/billing-service.log 2>&1 &
+BILLING_PID=$!
+cd ..
+print_status "Billing Service started - PID: $BILLING_PID"
+
+sleep 5
+
 # Start Frontend
 echo "Starting React Frontend on port 3000..."
 cd frontend
@@ -287,17 +300,19 @@ echo "  - Auth Service:         http://localhost:8080/api/auth"
 echo "  - Docteur Service:      http://localhost:8080/api/docteurs"
 echo "  - RDV Service:          http://localhost:8080/api/rdv"
 echo "  - Notification Service: http://localhost:8080/api/notifications"
+echo "  - Billing Service:      http://localhost:8080/api/billing"
 echo ""
 echo "Direct Service URLs (For debugging):"
 echo "  - Auth Service:         http://localhost:8084"
 echo "  - Docteur Service:      http://localhost:8081"
 echo "  - RDV Service:          http://localhost:8082"
 echo "  - Notification Service: http://localhost:8083"
+echo "  - Billing Service:      http://localhost:8085"
 echo ""
 echo "Database Connection:"
 echo "  Host:     localhost"
 echo "  Port:     5432"
-echo "  Database: $AUTH_DB, $DOCTEUR_DB, $RDV_DB"
+echo "  Database: $AUTH_DB, $DOCTEUR_DB, $RDV_DB, $BILLING_DB"
 echo "  Username: $DB_USER"
 echo "  Password: $DB_PASSWORD"
 echo ""
@@ -308,6 +323,7 @@ echo "  - Auth Service:         $AUTH_PID"
 echo "  - Docteur Service:      $DOCTEUR_PID"
 echo "  - RDV Service:          $RDV_PID"
 echo "  - Notification Service: $NOTIFICATION_PID"
+echo "  - Billing Service:      $BILLING_PID"
 echo "  - Frontend:             $FRONTEND_PID"
 echo ""
 echo "Logs: ./logs/"

@@ -29,3 +29,15 @@ export const userService = {
   deleteUser: (id) => apiClient.delete(`/users/${id}`),
   toggleUserStatus: (id) => apiClient.patch(`/users/${id}/toggle`)
 };
+
+export const billingService = {
+  getAllInvoices: () => apiClient.get('/billing/invoices'),
+  getInvoiceById: (id) => apiClient.get(`/billing/invoices/${id}`),
+  getInvoicesByPatient: (email) => apiClient.get(`/billing/invoices/patient/${email}`),
+  getInvoicesByStatus: (status) => apiClient.get(`/billing/invoices/status/${status}`),
+  createInvoice: (invoice) => apiClient.post('/billing/invoices', invoice),
+  updateInvoice: (id, invoice) => apiClient.put(`/billing/invoices/${id}`, invoice),
+  getPaymentsByInvoice: (invoiceId) => apiClient.get(`/billing/payments/invoice/${invoiceId}`),
+  recordPayment: (payment) => apiClient.post('/billing/payments', payment),
+  getOutstandingBalance: (email) => apiClient.get(`/billing/outstanding/${email}`)
+};

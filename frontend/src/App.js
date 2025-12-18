@@ -6,6 +6,7 @@ import RdvList from './components/RdvList';
 import AuthPanel from './components/AuthPanel';
 import DocteurManagement from './components/DocteurManagement';
 import UserManagement from './components/UserManagement';
+import InvoiceManagement from './components/InvoiceManagement';
 import { authService } from './services/auth';
 import { TOKEN_KEY, UNAUTHORIZED_EVENT } from './services/apiClient';
 
@@ -118,6 +119,12 @@ function App() {
               >
                 Gestion Réceptionnistes
               </button>
+              <button
+                className={activeTab === 'gestion-factures' ? 'active' : ''}
+                onClick={() => setActiveTab('gestion-factures')}
+              >
+                Gestion Factures
+              </button>
             </>
           )}
         </nav>
@@ -129,6 +136,7 @@ function App() {
             {activeTab === 'mes-rdv' && <RdvList />}
             {activeTab === 'gestion-docteurs' && user.role === 'ADMIN' && <DocteurManagement />}
             {activeTab === 'gestion-users' && user.role === 'ADMIN' && <UserManagement />}
+            {activeTab === 'gestion-factures' && user.role === 'ADMIN' && <InvoiceManagement />}
           </>
         ) : (
           <div className="card info-card">

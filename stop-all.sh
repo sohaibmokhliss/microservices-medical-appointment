@@ -27,6 +27,7 @@ pkill -f "auth-service" && print_status "Auth Service stopped" || print_warning 
 pkill -f "docteur-service" && print_status "Docteur Service stopped" || print_warning "Docteur Service not running"
 pkill -f "rdv-service" && print_status "RDV Service stopped" || print_warning "RDV Service not running"
 pkill -f "notification-service" && print_status "Notification Service stopped" || print_warning "Notification Service not running"
+pkill -f "billing-service" && print_status "Billing Service stopped" || print_warning "Billing Service not running"
 
 # Stop Node.js (frontend)
 echo ""

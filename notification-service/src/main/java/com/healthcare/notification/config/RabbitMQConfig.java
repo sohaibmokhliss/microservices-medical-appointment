@@ -13,11 +13,19 @@ import org.springframework.context.annotation.Configuration;
 public class RabbitMQConfig {
 
     @Value("${rabbitmq.queue.notifications}")
-    private String queueName;
+    private String appointmentQueueName;
+
+    @Value("${rabbitmq.queue.billing}")
+    private String billingQueueName;
 
     @Bean
     public Queue notificationsQueue() {
-        return new Queue(queueName, true);
+        return new Queue(appointmentQueueName, true);
+    }
+
+    @Bean
+    public Queue billingNotificationsQueue() {
+        return new Queue(billingQueueName, true);
     }
 
     @Bean

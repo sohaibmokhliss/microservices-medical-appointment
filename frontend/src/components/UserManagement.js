@@ -97,16 +97,6 @@ function UserManagement() {
     }
   };
 
-  const handleToggleStatus = async (id) => {
-    try {
-      await userService.toggleUserStatus(id);
-      loadUsers();
-      setError('');
-    } catch (err) {
-      setError('Erreur lors de la modification du statut');
-      console.error(err);
-    }
-  };
 
   const handleCancel = () => {
     setEditingId(null);
@@ -164,17 +154,6 @@ function UserManagement() {
               />
             </div>
             <input type="hidden" name="role" value="RECEPTIONIST" />
-            <div className="form-group">
-              <label>
-                <input
-                  type="checkbox"
-                  name="enabled"
-                  checked={formData.enabled}
-                  onChange={handleInputChange}
-                />
-                Compte activé
-              </label>
-            </div>
             <div className="form-actions">
               <button type="submit" className="btn-primary">Créer Réceptionniste</button>
               <button type="button" className="btn-secondary" onClick={handleCancel}>
@@ -193,7 +172,6 @@ function UserManagement() {
               <th>Nom d'utilisateur</th>
               <th>Email</th>
               <th>Rôle</th>
-              <th>Statut</th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -227,14 +205,6 @@ function UserManagement() {
                       )}
                     </td>
                     <td>
-                      <input
-                        type="checkbox"
-                        name="enabled"
-                        checked={formData.enabled}
-                        onChange={handleInputChange}
-                      />
-                    </td>
-                    <td>
                       <button className="btn-success btn-sm" onClick={handleUpdate}>
                         Enregistrer
                       </button>
@@ -250,22 +220,11 @@ function UserManagement() {
                     <td>{user.email}</td>
                     <td>{user.role}</td>
                     <td>
-                      <span className={`status-badge ${user.enabled ? 'active' : 'inactive'}`}>
-                        {user.enabled ? 'Actif' : 'Inactif'}
-                      </span>
-                    </td>
-                    <td>
                       <button
                         className="btn-warning btn-sm"
                         onClick={() => handleEdit(user)}
                       >
                         Modifier
-                      </button>
-                      <button
-                        className={`btn-sm ${user.enabled ? 'btn-secondary' : 'btn-success'}`}
-                        onClick={() => handleToggleStatus(user.id)}
-                      >
-                        {user.enabled ? 'Désactiver' : 'Activer'}
                       </button>
                       <button
                         className="btn-danger btn-sm"
