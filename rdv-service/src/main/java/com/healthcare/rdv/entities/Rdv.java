@@ -39,7 +39,7 @@ public class Rdv {
     private LocalDateTime dateHeure;
 
     @NotBlank(message = "Appointment reason is required")
-    @Size(min = 5, max = 500, message = "Reason must be between 5 and 500 characters")
+    @Size(min = 3, max = 500, message = "Reason must be between 3 and 500 characters")
     private String motif;
 
     private String statut;
