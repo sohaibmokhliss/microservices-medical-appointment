@@ -13,9 +13,7 @@ function InvoiceManagement() {
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [paymentData, setPaymentData] = useState({
     amount: '',
-    paymentMethod: 'CASH',
-    transactionId: '',
-    notes: ''
+    paymentMethod: 'CASH'
   });
 
   useEffect(() => {
@@ -74,15 +72,13 @@ function InvoiceManagement() {
         invoiceId: selectedInvoice.id,
         amount: parseFloat(paymentData.amount),
         paymentMethod: paymentData.paymentMethod,
-        transactionId: paymentData.transactionId,
-        status: 'SUCCESS',
-        notes: paymentData.notes
+        status: 'SUCCESS'
       };
 
       await billingService.recordPayment(payment);
       setShowPaymentForm(false);
       setSelectedInvoice(null);
-      setPaymentData({ amount: '', paymentMethod: 'CASH', transactionId: '', notes: '' });
+      setPaymentData({ amount: '', paymentMethod: 'CASH' });
       loadData();
       setError('');
     } catch (err) {
@@ -306,24 +302,6 @@ function InvoiceManagement() {
                 <option value="BANK_TRANSFER">Virement bancaire</option>
                 <option value="ONLINE">Paiement en ligne</option>
               </select>
-            </div>
-            <div className="form-group">
-              <label>ID de transaction (optionnel):</label>
-              <input
-                type="text"
-                name="transactionId"
-                value={paymentData.transactionId}
-                onChange={handlePaymentInputChange}
-              />
-            </div>
-            <div className="form-group">
-              <label>Notes (optionnel):</label>
-              <textarea
-                name="notes"
-                value={paymentData.notes}
-                onChange={handlePaymentInputChange}
-                rows="3"
-              />
             </div>
             <div className="form-actions">
               <button type="submit" className="btn-primary">Enregistrer le paiement</button>

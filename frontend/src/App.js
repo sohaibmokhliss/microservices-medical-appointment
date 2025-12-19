@@ -4,6 +4,8 @@ import DocteurList from './components/DocteurList';
 import RdvForm from './components/RdvForm';
 import RdvList from './components/RdvList';
 import AuthPanel from './components/AuthPanel';
+import DocteurManagement from './components/DocteurManagement';
+import UserManagement from './components/UserManagement';
 import InvoiceManagement from './components/InvoiceManagement';
 import { authService } from './services/auth';
 import { TOKEN_KEY, UNAUTHORIZED_EVENT } from './services/apiClient';
@@ -103,6 +105,22 @@ function App() {
           >
             Mes Rendez-vous
           </button>
+          {user?.role === 'ADMIN' && (
+            <>
+              <button
+                className={activeTab === 'gestion-docteurs' ? 'active' : ''}
+                onClick={() => setActiveTab('gestion-docteurs')}
+              >
+                Gestion Docteurs
+              </button>
+              <button
+                className={activeTab === 'gestion-users' ? 'active' : ''}
+                onClick={() => setActiveTab('gestion-users')}
+              >
+                Gestion Réceptionnistes
+              </button>
+            </>
+          )}
           {(user?.role === 'ADMIN' || user?.role === 'RECEPTIONIST') && (
             <button
               className={activeTab === 'gestion-factures' ? 'active' : ''}
@@ -118,6 +136,8 @@ function App() {
             {activeTab === 'docteurs' && <DocteurList />}
             {activeTab === 'nouveau-rdv' && <RdvForm />}
             {activeTab === 'mes-rdv' && <RdvList />}
+            {activeTab === 'gestion-docteurs' && user.role === 'ADMIN' && <DocteurManagement />}
+            {activeTab === 'gestion-users' && user.role === 'ADMIN' && <UserManagement />}
             {activeTab === 'gestion-factures' && (user.role === 'ADMIN' || user.role === 'RECEPTIONIST') && <InvoiceManagement />}
           </>
         ) : (
