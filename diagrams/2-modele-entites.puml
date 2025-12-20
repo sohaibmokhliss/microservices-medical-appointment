@@ -28,6 +28,47 @@ entity Rdv {
     statut : String
 }
 
+entity Invoice {
+    * id : Long
+    --
+    rdvId : Long
+    patientEmail : String
+    patientName : String
+    doctorName : String
+    specialty : String
+    amount : BigDecimal
+    tax : BigDecimal
+    total : BigDecimal
+    status : String
+    description : String
+    createdDate : LocalDateTime
+    dueDate : LocalDate
+    paidDate : LocalDateTime
+}
+
+entity Payment {
+    * id : Long
+    --
+    invoiceId : Long
+    amount : BigDecimal
+    paymentMethod : String
+    paymentDate : LocalDateTime
+    transactionId : String
+    status : String
+    notes : String
+}
+
+entity Pricing {
+    * id : Long
+    --
+    specialty : String
+    consultationFee : BigDecimal
+    description : String
+}
+
 Rdv }o--|| Docteur : référence
+Rdv ||--|| Invoice : generates
+Invoice ||--o{ Payment : "has payments"
+Pricing ||--o{ Invoice : "defines pricing for"
 
 @enduml

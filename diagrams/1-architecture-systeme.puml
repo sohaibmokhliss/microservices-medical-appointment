@@ -21,10 +21,12 @@ component "Auth\nService\n:8084" <<service>> as auth
 component "Docteur\nService\n:8083" <<service>> as docteur
 component "RDV\nService\n:8082" <<service>> as rdv
 component "Notification\nService\n:8085" <<service>> as notif
+component "Billing\nService\n:8086" <<service>> as billing
 
 database "PostgreSQL\nauthdb" <<database>> as db0
 database "PostgreSQL\ndocteurdb" <<database>> as db1
 database "PostgreSQL\nrdvdb" <<database>> as db2
+database "PostgreSQL\nbillingdb" <<database>> as db3
 
 queue "RabbitMQ" <<queue>> as rabbit
 
@@ -34,20 +36,24 @@ frontend --> gateway : HTTP/HTTPS
 gateway --> auth : JWT Auth
 gateway --> docteur : API REST
 gateway --> rdv : API REST
+gateway --> billing : API REST
 
 rdv --> docteur : Feign Client
 rdv --> rabbit : Publish Events
 rabbit --> notif : Consume Events
+rabbit --> billing : Consume Events
 
 auth --> db0
 docteur --> db1
 rdv --> db2
+billing --> db3
 notif --> external
 
 auth --> eureka : Register
 docteur --> eureka : Register
 rdv --> eureka : Register
 notif --> eureka : Register
+billing --> eureka : Register
 gateway --> eureka : Discovery
 
 @enduml

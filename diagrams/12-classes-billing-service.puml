@@ -1,0 +1,129 @@
+@startuml Classes Billing Service
+
+skinparam backgroundColor white
+title Billing Service - Structure
+
+class Invoice {
+    id : Long
+    rdvId : Long
+    patientEmail : String
+    patientName : String
+    doctorName : String
+    specialty : String
+    amount : BigDecimal
+    tax : BigDecimal
+    total : BigDecimal
+    status : String
+    description : String
+    createdDate : LocalDateTime
+    dueDate : LocalDate
+    paidDate : LocalDateTime
+}
+
+class Payment {
+    id : Long
+    invoiceId : Long
+    amount : BigDecimal
+    paymentMethod : String
+    paymentDate : LocalDateTime
+    transactionId : String
+    status : String
+    notes : String
+}
+
+class Pricing {
+    id : Long
+    specialty : String
+    consultationFee : BigDecimal
+    description : String
+}
+
+interface InvoiceRepository {
+    + findAll()
+    + findById(id)
+    + findByPatientEmail(email)
+    + findByStatus(status)
+    + findByRdvId(rdvId)
+    + save(invoice)
+}
+
+interface PaymentRepository {
+    + findAll()
+    + findById(id)
+    + findByInvoiceId(invoiceId)
+    + save(payment)
+}
+
+interface PricingRepository {
+    + findAll()
+    + findById(id)
+    + findBySpecialty(specialty)
+    + save(pricing)
+}
+
+class BillingService {
+    + getAllInvoices()
+    + getInvoiceById(id)
+    + getInvoicesByPatientEmail(email)
+    + getInvoicesByStatus(status)
+    + createInvoice(invoice)
+    + updateInvoice(id, invoice)
+    + getPaymentsByInvoiceId(invoiceId)
+    + recordPayment(payment)
+    + getOutstandingBalance(patientEmail)
+}
+
+class BillingController {
+    + getAllInvoices()
+    + getInvoiceById(id)
+    + getInvoicesByPatientEmail(email)
+    + getInvoicesByStatus(status)
+    + createInvoice(invoice)
+    + updateInvoice(id, invoice)
+    + getPaymentsByInvoiceId(invoiceId)
+    + recordPayment(payment)
+    + getOutstandingBalance(patientEmail)
+}
+
+class AppointmentEventListener {
+    + handleAppointmentEvent(event)
+}
+
+class AppointmentEvent {
+    eventType : String
+    rdvId : Long
+    patientEmail : String
+    patientNom : String
+    patientPrenom : String
+    docteurNom : String
+    docteurPrenom : String
+    specialite : String
+    dateHeure : LocalDateTime
+    motif : String
+}
+
+BillingController --> BillingService
+BillingService --> InvoiceRepository
+BillingService --> PaymentRepository
+BillingService --> PricingRepository
+InvoiceRepository --> Invoice
+PaymentRepository --> Payment
+PricingRepository --> Pricing
+AppointmentEventListener --> BillingService
+AppointmentEventListener --> AppointmentEvent
+
+note right of AppointmentEventListener
+  @RabbitListener
+  Consumes appointment events
+  from RabbitMQ queue
+  Auto-generates invoices
+end note
+
+note right of BillingService
+  Manages billing operations
+  Calculates totals with tax
+  Updates invoice status
+  based on payments
+end note
+
+@enduml

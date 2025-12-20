@@ -18,10 +18,12 @@ component "Auth Service\nJWT / Spring Security\n:8084" <<service>> as auth
 component "Docteur Service\nSpring Data REST\n:8081" <<service>> as docteur
 component "RDV Service\nFeign Client\n:8082" <<service>> as rdv
 component "Notification Service\nWebClient\n:8083" <<service>> as notif
+component "Billing Service\nRabbitMQ Consumer\n:8086" <<service>> as billing
 
 database "PostgreSQL\nauthdb" <<database>> as dbAuth
 database "PostgreSQL\ndocteurdb" <<database>> as dbDoc
 database "PostgreSQL\nrdvdb" <<database>> as dbRdv
+database "PostgreSQL\nbillingdb" <<database>> as dbBilling
 
 queue "RabbitMQ" <<infra>> as rabbit
 cloud "Email (Resend)" as external
@@ -32,20 +34,24 @@ gateway --> auth : /api/auth/**
 gateway --> docteur : /api/docteurs/**
 gateway --> rdv : /api/rdv/**
 gateway --> notif : /api/notifications/**
+gateway --> billing : /api/billing/**
 
 rdv --> docteur : Feign (serviceId)
 rdv --> rabbit : Publish Events
 rabbit --> notif : Consume Events
+rabbit --> billing : Consume Appointment Events
 
 auth --> dbAuth
 docteur --> dbDoc
 rdv --> dbRdv
+billing --> dbBilling
 notif --> external : Email API
 
 auth --> eureka : Enregistrement
 docteur --> eureka : Enregistrement
 rdv --> eureka : Enregistrement
 notif --> eureka : Enregistrement
+billing --> eureka : Enregistrement
 gateway --> eureka : Découverte/LoadBalancing
 
 note right of gateway
