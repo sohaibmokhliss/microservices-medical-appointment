@@ -521,7 +521,7 @@ Données de test pré-chargées :
 
 ## Screenshots
 
-Des captures d'écran de l'application sont disponibles dans le répertoire `/sreenshots` :
+Des captures d'écran de l'application sont disponibles dans le répertoire `/screenshots` :
 - Interface d'administration
 - Gestion des docteurs
 - Formulaire de prise de rendez-vous
