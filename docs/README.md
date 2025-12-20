@@ -227,7 +227,7 @@ Ce document est fourni à des fins académiques et de documentation du projet.
 
 **Sohaib Mokhliss**  
 Encadré par : Pr. Abdelaziz Ettaoufik  
-Année Universitaire 2024-2025
+Année Universitaire 2025-2026
 
 ## Support
 
