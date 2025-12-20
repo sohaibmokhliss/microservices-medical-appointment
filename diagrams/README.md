@@ -8,9 +8,9 @@ Ce répertoire contient les diagrammes UML simplifiés du projet, créés avec P
 Vue d'ensemble de l'architecture microservices:
 - API Gateway (Spring Cloud Gateway) - port 8080
 - Eureka Server (Service Discovery) - port 8761
-- 4 microservices backend (Auth, Docteur, RDV, Notification)
+- 5 microservices backend (Auth, Docteur, RDV, Notification, Billing)
 - Frontend React - port 3000
-- Bases de données PostgreSQL (authdb, docteurdb, rdvdb)
+- Bases de données PostgreSQL (authdb, docteurdb, rdvdb, billingdb)
 - RabbitMQ pour messaging asynchrone
 - Service externe Resend pour emails
 - Communications via Feign Client et RabbitMQ
@@ -21,7 +21,10 @@ Vue d'ensemble de l'architecture microservices:
 Entités principales du système:
 - **Docteur:** informations du médecin
 - **Rdv:** données du rendez-vous et patient
-- Relation entre les deux entités
+- **Invoice:** facture générée pour un rendez-vous
+- **Payment:** paiement effectué pour une facture
+- **Pricing:** tarification par spécialité médicale
+- Relations entre les entités
 
 ---
 
@@ -80,8 +83,8 @@ Structure du service Notification:
 Interaction détaillée des microservices:
 - API Gateway (port 8080) avec filtre JWT global
 - Service Discovery Eureka (port 8761)
-- Auth Service (port 8084), Docteur (8083), RDV (8082), Notification (8085)
-- Bases de données PostgreSQL (authdb, docteurdb, rdvdb)
+- Auth Service (port 8084), Docteur (8081), RDV (8082), Notification (8083), Billing (8085)
+- Bases de données PostgreSQL (authdb, docteurdb, rdvdb, billingdb)
 - RabbitMQ pour messaging asynchrone
 - Resend pour envoi d'emails
 
@@ -111,6 +114,17 @@ Structure de la passerelle:
 - Filtre global JwtAuthenticationFilter
 - Configuration CORS
 - Routage vers Auth/Docteur/RDV/Notification
+
+---
+
+### 12. Classes - Billing Service (`12-classes-billing-service.puml`)
+Structure du service de facturation:
+- Entités Invoice, Payment, Pricing
+- InvoiceRepository, PaymentRepository, PricingRepository (Spring Data JPA)
+- BillingService (logique métier)
+- BillingController (REST API)
+- AppointmentEventListener (RabbitMQ Consumer)
+- Génération automatique de factures lors de la création de rendez-vous
 
 ---
 
