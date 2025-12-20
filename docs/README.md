@@ -2,6 +2,8 @@
 
 Ce dossier contient la documentation académique complète du projet de système de prise de rendez-vous médical basé sur une architecture microservices.
 
+> **Version condensée disponible** : Une version condensée de 25-30 pages est disponible dans le dossier [`short/`](short/) pour une lecture plus rapide.
+
 ## Structure
 
 ```
@@ -194,7 +196,9 @@ Pour ajouter du contenu, modifiez les fichiers `.tex` dans le dossier `chapters/
 
 ## Longueur Estimée
 
-Le document compilé fait environ **20-25 pages** (hors pages préliminaires).
+Le document compilé fait environ **92 pages** (incluant toutes les sections détaillées).
+
+Pour une version plus courte (25-30 pages), consultez le dossier [`short/`](short/).
 
 ## Diagrammes Inclus
 

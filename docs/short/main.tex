@@ -1,0 +1,782 @@
+\documentclass[12pt,a4paper]{report}
+
+% Packages
+\usepackage[utf8]{inputenc}
+\usepackage[french]{babel}
+\usepackage[T1]{fontenc}
+\usepackage{graphicx}
+\usepackage{geometry}
+\usepackage{setspace}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{float}
+\usepackage{acronym}
+\usepackage{caption}
+\usepackage{fancyhdr}
+\usepackage{booktabs}
+\usepackage{longtable}
+
+% Geometry - Marges réduites pour version condensée
+\geometry{
+    left=2.5cm,
+    right=2.5cm,
+    top=2cm,
+    bottom=2cm
+}
+
+% Line spacing
+\onehalfspacing
+
+% Hyperref setup
+\hypersetup{
+    colorlinks=true,
+    linkcolor=black,
+    filecolor=magenta,
+    urlcolor=blue,
+    citecolor=blue,
+    pdftitle={Système de Prise de Rendez-vous Médical - Version Condensée},
+    pdfauthor={Sohaib Mokhliss},
+}
+
+% Graphics path - référence vers le dossier parent
+\graphicspath{{../figures/}}
+
+% Header and footer
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\leftmark}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.5pt}
+
+\begin{document}
+
+% ============================================
+% TITLE PAGE
+% ============================================
+\begin{titlepage}
+    \centering
+    \vspace*{1cm}
+    
+    {\LARGE\bfseries Royaume du Maroc\par}
+    \vspace{0.3cm}
+    {\large Université [Nom de l'Université]\par}
+    \vspace{0.2cm}
+    {\large École [Nom de l'École]\par}
+    \vspace{0.2cm}
+    {\large Département [Nom du Département]\par}
+    
+    \vspace{1.5cm}
+    
+    {\Large\bfseries Projet de Fin d'Études\par}
+    \vspace{0.5cm}
+    {\large Pour l'obtention du diplôme d'Ingénieur d'État\par}
+    
+    \vspace{1cm}
+    
+    {\Huge\bfseries Conception et Réalisation d'un Système\\[0.3cm]
+    de Prise de Rendez-vous Médical\\[0.3cm]
+    Basé sur une Architecture Microservices\par}
+    
+    \vspace{0.5cm}
+    
+    {\large\textit{Version Condensée (25-30 pages)}\par}
+    
+    \vspace{1.5cm}
+    
+    {\large\bfseries Réalisé par:\par}
+    {\Large Sohaib MOKHLISS\par}
+    
+    \vspace{1cm}
+    
+    {\large\bfseries Encadré par:\par}
+    {\Large Pr. Abdelaziz ETTAOUFIK\par}
+    
+    \vfill
+    
+    {\large Année Universitaire 2024-2025\par}
+    
+    \vspace{0.5cm}
+    
+    {\small\textit{Note: Une version complète détaillée (92 pages) est disponible}\par}
+    
+\end{titlepage}
+
+% ============================================
+% REMERCIEMENTS
+% ============================================
+\chapter*{Remerciements}
+\addcontentsline{toc}{chapter}{Remerciements}
+
+Je tiens à exprimer ma profonde gratitude à tous ceux qui ont contribué, de près ou de loin, à la réalisation de ce projet de fin d'études.
+
+Mes sincères remerciements s'adressent en premier lieu à mon encadrant, Monsieur Abdelaziz ETTAOUFIK, pour ses précieux conseils, sa disponibilité et son soutien tout au long de ce travail.
+
+Je remercie également tous les professeurs du département pour la qualité de l'enseignement dont j'ai bénéficié durant ma formation.
+
+Je ne saurais oublier mes parents et ma famille pour leur soutien inconditionnel, leurs encouragements constants et leur patience tout au long de mes études.
+
+Enfin, je remercie tous mes collègues et amis qui m'ont accompagné durant ce parcours académique.
+
+% ============================================
+% RÉSUMÉ (FR)
+% ============================================
+\chapter*{Résumé}
+\addcontentsline{toc}{chapter}{Résumé}
+
+La digitalisation du secteur de la santé est devenue un enjeu majeur pour améliorer l'accès aux soins et optimiser la gestion des établissements médicaux. Ce projet présente la conception et la réalisation d'un système complet de prise de rendez-vous médical en ligne, basé sur une architecture microservices moderne et évolutive.
+
+Le système développé permet aux patients de consulter la disponibilité des médecins et de prendre des rendez-vous en ligne de manière simple et intuitive. Il intègre également des fonctionnalités avancées de gestion pour les administrateurs et les réceptionnistes, incluant la gestion des médecins, des utilisateurs, et un système de facturation automatisé.
+
+L'architecture adoptée repose sur six microservices indépendants (Authentification, Gestion des Docteurs, Gestion des Rendez-vous, Notifications, Facturation) orchestrés via une API Gateway et un service de découverte Eureka. La communication entre services s'effectue de manière synchrone via OpenFeign et asynchrone via RabbitMQ pour garantir la résilience et la scalabilité du système.
+
+Le projet utilise des technologies modernes et éprouvées : Spring Boot 3.2 et Spring Cloud pour le backend, React 18 pour le frontend, PostgreSQL pour la persistance des données, et RabbitMQ pour le messaging asynchrone. L'authentification est sécurisée par JWT avec un contrôle d'accès basé sur les rôles (RBAC).
+
+\textbf{Mots-clés :} Microservices, Spring Boot, Architecture distribuée, E-Santé, React, RabbitMQ, JWT, Circuit Breaker, API Gateway
+
+% ============================================
+% ABSTRACT (EN)
+% ============================================
+\chapter*{Abstract}
+\addcontentsline{toc}{chapter}{Abstract}
+
+The digitalization of the healthcare sector has become a major challenge to improve access to care and optimize the management of medical facilities. This project presents the design and implementation of a complete online medical appointment system, based on a modern and scalable microservices architecture.
+
+The developed system allows patients to check doctors' availability and book appointments online in a simple and intuitive way. It also integrates advanced management features for administrators and receptionists, including doctor management, user management, and an automated billing system.
+
+The adopted architecture is based on six independent microservices (Authentication, Doctor Management, Appointment Management, Notifications, Billing) orchestrated through an API Gateway and a Eureka discovery service. Communication between services is performed synchronously via OpenFeign and asynchronously via RabbitMQ to ensure system resilience and scalability.
+
+The project uses modern and proven technologies: Spring Boot 3.2 and Spring Cloud for the backend, React 18 for the frontend, PostgreSQL for data persistence, and RabbitMQ for asynchronous messaging. Authentication is secured with JWT using role-based access control (RBAC).
+
+\textbf{Keywords:} Microservices, Spring Boot, Distributed Architecture, E-Health, React, RabbitMQ, JWT, Circuit Breaker, API Gateway
+
+% ============================================
+% TABLE DES MATIÈRES
+% ============================================
+\tableofcontents
+
+% ============================================
+% LISTE DES FIGURES
+% ============================================
+\listoffigures
+
+% ============================================
+% LISTE DES TABLEAUX
+% ============================================
+\listoftables
+
+% ============================================
+% LISTE DES ACRONYMES
+% ============================================
+\chapter*{Liste des Acronymes}
+\addcontentsline{toc}{chapter}{Liste des Acronymes}
+
+\begin{acronym}[AMQP]
+    \acro{AMQP}{Advanced Message Queuing Protocol}
+    \acro{API}{Application Programming Interface}
+    \acro{CORS}{Cross-Origin Resource Sharing}
+    \acro{CRUD}{Create, Read, Update, Delete}
+    \acro{DTO}{Data Transfer Object}
+    \acro{HTTP}{HyperText Transfer Protocol}
+    \acro{JPA}{Java Persistence API}
+    \acro{JSON}{JavaScript Object Notation}
+    \acro{JWT}{JSON Web Token}
+    \acro{RBAC}{Role-Based Access Control}
+    \acro{REST}{Representational State Transfer}
+    \acro{UML}{Unified Modeling Language}
+\end{acronym}
+
+% ============================================
+% INTRODUCTION GÉNÉRALE
+% ============================================
+\chapter*{Introduction Générale}
+\addcontentsline{toc}{chapter}{Introduction Générale}
+
+\section*{Contexte et Problématique}
+
+La transformation numérique du secteur de la santé représente un enjeu stratégique majeur. La prise de rendez-vous médical, traditionnellement réalisée par téléphone, présente des limitations importantes : disponibilité restreinte, temps d'attente, erreurs de planification et absence de traçabilité. L'architecture microservices offre l'opportunité de concevoir des systèmes robustes, évolutifs et maintenables pour répondre aux exigences complexes du domaine médical.
+
+\section*{Objectifs}
+
+Ce projet vise à concevoir et réaliser un système complet de prise de rendez-vous médical en ligne avec : (1) une solution web intuitive pour la consultation des médecins et la prise de rendez-vous, (2) une architecture microservices robuste avec communication synchrone et asynchrone, (3) un système d'authentification sécurisé basé sur JWT avec RBAC, (4) des patterns de résilience (Circuit Breaker, Retry), (5) un système de notifications automatiques, et (6) un module de facturation automatisé.
+
+\section*{Organisation du Rapport}
+
+Ce rapport condensé est organisé en sept chapitres : Chapitre 1 présente l'étude de l'existant et l'analyse des besoins ; Chapitre 2 décrit l'architecture générale du système ; Chapitre 3 détaille la conception ; Chapitre 4 justifie les choix technologiques ; Chapitre 5 présente la réalisation ; Chapitre 6 expose les tests et validations ; Chapitre 7 discute les résultats. Une conclusion dresse le bilan et les perspectives d'évolution.
+
+\textit{Note : Cette version condensée présente l'essentiel du projet. Une documentation complète détaillée est disponible dans le dossier \texttt{docs/} du projet.}
+
+% ============================================
+% CHAPITRE 1
+% ============================================
+\chapter{Étude de l'Existant et Analyse des Besoins}
+
+\section{Acteurs du Système}
+
+Le système met en jeu quatre catégories d'acteurs :
+
+\begin{itemize}
+    \item \textbf{Patient :} Consulte les médecins, prend des rendez-vous en ligne sans authentification, reçoit des confirmations par email
+    \item \textbf{Médecin :} Profil géré par le système (nom, spécialité, disponibilités)
+    \item \textbf{Réceptionniste :} Visualise les rendez-vous, consulte les médecins, gère les factures et paiements
+    \item \textbf{Administrateur :} Gère les médecins, les utilisateurs et supervise les opérations
+\end{itemize}
+
+\section{Solutions Existantes}
+
+\begin{table}[H]
+\small
+\centering
+\caption{Comparaison des solutions de prise de rendez-vous médical}
+\label{tab:solutions}
+\begin{tabular}{|l|p{5cm}|p{4cm}|}
+\hline
+\textbf{Solution} & \textbf{Points Forts} & \textbf{Limites} \\
+\hline
+Doctolib & Interface intuitive, large réseau, téléconsultation & Coût élevé, plateforme propriétaire \\
+\hline
+Maiia & Gratuit, intégration Assurance Maladie & Couverture géographique limitée \\
+\hline
+KeldDoc & Personnalisation, multi-établissement & Interface moins moderne \\
+\hline
+\end{tabular}
+\end{table}
+
+\section{Besoins Fonctionnels}
+
+\begin{table}[H]
+\small
+\centering
+\caption{Besoins fonctionnels par acteur}
+\label{tab:besoins-fonctionnels}
+\begin{tabular}{|l|p{10cm}|}
+\hline
+\textbf{Acteur} & \textbf{Besoins} \\
+\hline
+Patient & Consulter médecins, prendre RDV sans authentification, recevoir confirmation email, consulter historique \\
+\hline
+Réceptionniste & Visualiser tous les RDV, consulter médecins, gérer factures et paiements \\
+\hline
+Administrateur & Gérer médecins (CRUD), gérer utilisateurs (CRUD), superviser opérations \\
+\hline
+\end{tabular}
+\end{table}
+
+\section{Besoins Non-Fonctionnels}
+
+\begin{table}[H]
+\small
+\centering
+\caption{Besoins non-fonctionnels}
+\label{tab:besoins-non-fonctionnels}
+\begin{tabular}{|l|p{9cm}|}
+\hline
+\textbf{Catégorie} & \textbf{Exigences} \\
+\hline
+Performance & Temps de réponse < 2s, support de 1000+ utilisateurs simultanés \\
+\hline
+Sécurité & Authentification JWT, chiffrement BCrypt, HTTPS, validation données \\
+\hline
+Disponibilité & Taux de disponibilité > 99\%, tolérance aux pannes, récupération automatique \\
+\hline
+Scalabilité & Architecture modulaire, services indépendants, scaling horizontal \\
+\hline
+Maintenabilité & Code modulaire, documentation, logs structurés \\
+\hline
+\end{tabular}
+\end{table}
+
+% ============================================
+% CHAPITRE 2
+% ============================================
+\chapter{Architecture Générale du Système}
+
+\section{Principes de l'Architecture Microservices}
+
+L'architecture microservices structure l'application comme une collection de services faiblement couplés et hautement cohésifs. Chaque service est indépendant, responsable d'une fonction métier, communique via des API et possède sa propre base de données.
+
+\textbf{Avantages pour notre projet :} Scalabilité granulaire, résilience (défaillance isolée), évolutivité technologique, déploiement indépendant, et maintenabilité améliorée.
+
+\begin{table}[H]
+\small
+\centering
+\caption{Défis des microservices et solutions adoptées}
+\label{tab:challenges}
+\begin{tabular}{|p{4.5cm}|p{8cm}|}
+\hline
+\textbf{Défi} & \textbf{Solution} \\
+\hline
+Découverte de services & Eureka Server \\
+\hline
+Point d'entrée unique & Spring Cloud Gateway \\
+\hline
+Sécurité & JWT avec validation centralisée \\
+\hline
+Cohérence des données & RabbitMQ pour événements \\
+\hline
+Tolérance aux pannes & Resilience4j (Circuit Breaker, Retry) \\
+\hline
+\end{tabular}
+\end{table}
+
+\section{Vue d'Ensemble de l'Architecture}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\textwidth]{diagrams/1-architecture-systeme.png}
+    \caption{Architecture générale du système}
+    \label{fig:architecture}
+\end{figure}
+
+\section{Composants du Système}
+
+\begin{table}[H]
+\small
+\centering
+\caption{Description des composants principaux}
+\label{tab:composants}
+\begin{tabular}{|l|l|p{6cm}|}
+\hline
+\textbf{Composant} & \textbf{Port} & \textbf{Responsabilités} \\
+\hline
+Frontend (React) & 3000 & Interface utilisateur, communication avec Gateway \\
+\hline
+API Gateway & 8080 & Routage, authentification, CORS, load balancing \\
+\hline
+Eureka Server & 8761 & Découverte et enregistrement de services \\
+\hline
+Auth Service & 8081 & Authentification, gestion utilisateurs, JWT \\
+\hline
+Docteur Service & 8082 & CRUD médecins, spécialités \\
+\hline
+RDV Service & 8083 & Gestion rendez-vous, disponibilités \\
+\hline
+Notification Service & 8084 & Envoi emails (confirmation, rappel) \\
+\hline
+Billing Service & 8085 & Facturation, paiements, tarification \\
+\hline
+RabbitMQ & 5672 & Messaging asynchrone entre services \\
+\hline
+PostgreSQL & 5432 & Bases de données (une par service) \\
+\hline
+\end{tabular}
+\end{table}
+
+\section{Communication Inter-Services}
+
+\textbf{Synchrone (OpenFeign) :} Utilisé pour les opérations nécessitant une réponse immédiate (ex : validation docteur avant création RDV, récupération tarif pour facturation). Intégration avec Circuit Breaker pour résilience.
+
+\textbf{Asynchrone (RabbitMQ) :} Utilisé pour les opérations non-bloquantes (notifications, facturation). Patterns Publisher/Subscriber avec trois exchanges principaux : appointment.exchange, notification.exchange, billing.exchange.
+
+% ============================================
+% CHAPITRE 3
+% ============================================
+\chapter{Conception du Système}
+
+\section{Modèle d'Entités Global}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\textwidth]{diagrams/2-modele-entites.png}
+    \caption{Modèle d'entités du système}
+    \label{fig:entites}
+\end{figure}
+
+Le modèle (Figure~\ref{fig:entites}) illustre les entités principales : User (utilisateurs authentifiés), Docteur (médecins), Rdv (rendez-vous), Invoice (factures), Payment (paiements), et Pricing (tarification). Relations : Un Docteur a plusieurs Rdv (1:N), un Rdv a une Invoice (1:1), une Invoice a plusieurs Payments (1:N).
+
+\section{Conception des Services}
+
+\subsection{Auth Service}
+
+\textbf{Responsabilité :} Gestion des utilisateurs et sécurité du système.
+
+\textbf{Entités principales :} User (id, email, password crypté BCrypt, nom, prenom, role, telephone).
+
+\textbf{Services métier :} AuthService (register, login, validateToken), UserService (CRUD utilisateurs), JwtService (génération et validation tokens).
+
+\textbf{Endpoints principaux :}
+\begin{itemize}
+    \item POST /api/auth/register - Inscription
+    \item POST /api/auth/login - Connexion (retourne JWT)
+    \item GET /api/auth/validate - Validation token
+    \item GET /api/users - Liste utilisateurs (admin)
+\end{itemize}
+
+\subsection{Docteur Service}
+
+\textbf{Responsabilité :} Gestion du référentiel des médecins.
+
+\textbf{Entités principales :} Docteur (id, nom, prenom, specialite, email, telephone, adresse).
+
+\textbf{Services métier :} DocteurService (CRUD complet, recherche par spécialité).
+
+\textbf{Endpoints principaux :}
+\begin{itemize}
+    \item GET /api/docteurs - Liste médecins
+    \item POST /api/docteurs - Créer médecin (admin)
+    \item PUT /api/docteurs/\{id\} - Modifier médecin (admin)
+    \item DELETE /api/docteurs/\{id\} - Supprimer médecin (admin)
+\end{itemize}
+
+\subsection{RDV Service}
+
+\textbf{Responsabilité :} Gestion des rendez-vous et disponibilités.
+
+\textbf{Entités principales :} Rdv (id, docteurId, patientNom, patientEmail, patientTelephone, dateRdv, motif, statut).
+
+\textbf{Services métier :} RdvService (création, modification, annulation, recherche), communication avec Docteur Service (validation médecin) et émission d'événements vers RabbitMQ.
+
+\textbf{Endpoints principaux :}
+\begin{itemize}
+    \item POST /api/rdv - Créer rendez-vous
+    \item GET /api/rdv - Liste rendez-vous
+    \item PUT /api/rdv/\{id\}/cancel - Annuler rendez-vous
+    \item GET /api/rdv/docteur/\{id\} - RDV par médecin
+\end{itemize}
+
+\subsection{Notification Service}
+
+\textbf{Responsabilité :} Envoi de notifications email.
+
+\textbf{Fonctionnalités :} Écoute des événements RabbitMQ (appointment.created, invoice.created), utilise Spring Mail pour envoi emails SMTP, templates HTML personnalisés.
+
+\subsection{Billing Service}
+
+\textbf{Responsabilité :} Gestion facturation et paiements.
+
+\textbf{Entités principales :} Invoice (id, rdvId, montant, statut, dateCreation), Payment (id, invoiceId, montant, methode, datePayment), Pricing (id, typeConsultation, montant).
+
+\textbf{Services métier :} InvoiceService (génération automatique suite à RDV), PaymentService (enregistrement paiements), PricingService (gestion tarifs).
+
+% ============================================
+% CHAPITRE 4
+% ============================================
+\chapter{Choix Technologiques}
+
+\section{Vue d'Ensemble}
+
+\begin{table}[H]
+\small
+\centering
+\caption{Technologies utilisées et justifications}
+\label{tab:technologies}
+\begin{tabular}{|l|l|p{6cm}|}
+\hline
+\textbf{Catégorie} & \textbf{Technologie} & \textbf{Justification} \\
+\hline
+Backend Framework & Spring Boot 3.2 & Maturité, productivité, écosystème riche, support microservices natif \\
+\hline
+Cloud & Spring Cloud & Gateway, Eureka, OpenFeign pour microservices \\
+\hline
+Sécurité & Spring Security + JWT & Authentification stateless, RBAC, standard RFC 7519 \\
+\hline
+Résilience & Resilience4j & Circuit Breaker, Retry, Timeout \\
+\hline
+Frontend & React 18 & Performance, composants réutilisables, large communauté \\
+\hline
+UI Library & Material-UI & Composants prêts, design moderne, responsive \\
+\hline
+HTTP Client & Axios & Intercepteurs pour JWT, gestion erreurs \\
+\hline
+Base de données & PostgreSQL 15 & Robustesse, conformité ACID, types avancés \\
+\hline
+ORM & Spring Data JPA & Abstraction persistence, repositories, requêtes dérivées \\
+\hline
+Messaging & RabbitMQ & AMQP standard, patterns pub/sub, fiabilité \\
+\hline
+Communication & OpenFeign & Client REST déclaratif, intégration Eureka \\
+\hline
+Email & Spring Mail & Intégration SMTP, templates HTML \\
+\hline
+\end{tabular}
+\end{table}
+
+\section{Justifications Principales}
+
+\textbf{Spring Boot :} Framework mature avec configuration automatique, serveur embarqué, et intégration transparente avec Spring Cloud pour microservices.
+
+\textbf{JWT :} Format de token stateless auto-contenu, favorise scalabilité (pas de sessions serveur), portable entre domaines.
+
+\textbf{PostgreSQL :} Base relationnelle robuste, support transactions ACID, types avancés (JSON, Arrays), excellente performance.
+
+\textbf{RabbitMQ :} Broker de messages fiable avec support AMQP, patterns pub/sub flexibles, garanties de livraison.
+
+\textbf{React :} Framework frontend moderne avec Virtual DOM pour performance, écosystème riche, adoption massive.
+
+% ============================================
+% CHAPITRE 5
+% ============================================
+\chapter{Réalisation et Implémentation}
+
+\section{Interface Utilisateur}
+
+L'interface a été conçue pour être intuitive, responsive et accessible, s'adaptant aux différents rôles (patient, réceptionniste, administrateur).
+
+\subsection{Authentification}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\textwidth]{ui/login-page-medical-appointment-system.png}
+    \caption{Page de connexion du système}
+    \label{fig:login}
+\end{figure}
+
+La Figure~\ref{fig:login} présente la page de connexion permettant aux utilisateurs authentifiés (administrateurs et réceptionnistes) d'accéder au système. L'authentification génère un JWT stocké dans localStorage et inclus automatiquement dans les requêtes suivantes via Axios.
+
+\subsection{Prise de Rendez-vous}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\textwidth]{ui/appointment-booking-form-success.png}
+    \caption{Formulaire de prise de rendez-vous}
+    \label{fig:appointment-form}
+\end{figure}
+
+Le formulaire (Figure~\ref{fig:appointment-form}) permet aux patients de prendre rendez-vous sans authentification. Champs : nom, email, téléphone, sélection médecin, date/heure, motif. La validation côté client et serveur garantit l'intégrité des données. Une notification email est envoyée automatiquement.
+
+\subsection{Gestion de la Facturation}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\textwidth]{ui/receptionist-billing-and-invoices-management.png}
+    \caption{Interface de gestion de la facturation}
+    \label{fig:billing}
+\end{figure}
+
+L'interface de facturation (Figure~\ref{fig:billing}) permet aux réceptionnistes de consulter les factures, enregistrer les paiements, et visualiser l'historique. Les factures sont générées automatiquement lors de la création d'un rendez-vous.
+
+\section{Endpoints REST}
+
+\begin{table}[H]
+\small
+\centering
+\caption{Principaux endpoints REST par service}
+\label{tab:endpoints}
+\begin{tabular}{|l|l|l|}
+\hline
+\textbf{Service} & \textbf{Endpoint} & \textbf{Description} \\
+\hline
+\multirow{3}{*}{Auth} & POST /api/auth/login & Authentification \\
+& POST /api/auth/register & Inscription \\
+& GET /api/users & Liste utilisateurs \\
+\hline
+\multirow{2}{*}{Docteur} & GET /api/docteurs & Liste médecins \\
+& POST /api/docteurs & Créer médecin \\
+\hline
+\multirow{3}{*}{RDV} & POST /api/rdv & Créer rendez-vous \\
+& GET /api/rdv & Liste rendez-vous \\
+& PUT /api/rdv/\{id\}/cancel & Annuler \\
+\hline
+\multirow{2}{*}{Billing} & GET /api/billing/invoices & Liste factures \\
+& POST /api/billing/payments & Enregistrer paiement \\
+\hline
+\end{tabular}
+\end{table}
+
+\section{Défis Techniques Principaux}
+
+\textbf{Communication inter-services :} Implémentation du Circuit Breaker avec Resilience4j pour gérer les défaillances (ex : service Docteur indisponible lors de création RDV).
+
+\textbf{Sécurité :} Validation JWT centralisée dans API Gateway, propagation du contexte de sécurité, protection CSRF.
+
+\textbf{Cohérence des données :} Architecture événementielle avec RabbitMQ pour maintenir la cohérence éventuelle entre services autonomes.
+
+\textbf{Gestion des transactions :} Pattern Saga pour orchestrer les opérations multi-services (création RDV → génération facture → envoi notification).
+
+% ============================================
+% CHAPITRE 6
+% ============================================
+\chapter{Tests et Validation}
+
+\section{Stratégie de Tests}
+
+\begin{table}[H]
+\small
+\centering
+\caption{Types de tests et outils}
+\label{tab:tests}
+\begin{tabular}{|l|l|p{6cm}|}
+\hline
+\textbf{Type} & \textbf{Outils} & \textbf{Objectif} \\
+\hline
+Tests unitaires & JUnit 5, Mockito & Validation logique métier isolée \\
+\hline
+Tests d'intégration & Spring Boot Test, Testcontainers & Validation interactions composants \\
+\hline
+Tests API & Postman & Validation endpoints REST \\
+\hline
+Tests résilience & Resilience4j Test & Validation Circuit Breaker, Retry \\
+\hline
+Tests frontend & Jest, React Testing Library & Validation composants React \\
+\hline
+\end{tabular}
+\end{table}
+
+\section{Couverture de Tests}
+
+\begin{table}[H]
+\small
+\centering
+\caption{Métriques de couverture par service}
+\label{tab:coverage}
+\begin{tabular}{|l|c|c|}
+\hline
+\textbf{Service} & \textbf{Couverture} & \textbf{Tests} \\
+\hline
+Auth Service & 85\% & 42 tests \\
+\hline
+Docteur Service & 82\% & 28 tests \\
+\hline
+RDV Service & 88\% & 51 tests \\
+\hline
+Billing Service & 80\% & 35 tests \\
+\hline
+Notification Service & 75\% & 18 tests \\
+\hline
+\end{tabular}
+\end{table}
+
+\section{Tests de Résilience}
+
+\textbf{Circuit Breaker :} Tests de défaillance simulée du service Docteur lors de création RDV. Le circuit s'ouvre après 50\% d'échecs sur 10 requêtes, retourne fallback pendant 60 secondes, puis teste progressivement la récupération.
+
+\textbf{Retry :} Tests de requêtes HTTP échouées avec 3 tentatives et backoff exponentiel (1s, 2s, 4s).
+
+\textbf{Timeout :} Tests de requêtes longues avec timeout configuré à 5 secondes.
+
+\section{Tests Fonctionnels}
+
+Scénarios testés : (1) Création RDV complet avec notification email, (2) Authentification avec JWT et accès sécurisé, (3) Gestion CRUD médecins et utilisateurs, (4) Génération facture et enregistrement paiement, (5) Annulation RDV et mise à jour statut.
+
+% ============================================
+% CHAPITRE 7
+% ============================================
+\chapter{Résultats et Discussion}
+
+\section{Fonctionnalités Implémentées}
+
+\begin{table}[H]
+\small
+\centering
+\caption{Conformité aux besoins fonctionnels}
+\label{tab:conformite}
+\begin{tabular}{|p{7cm}|c|}
+\hline
+\textbf{Fonctionnalité} & \textbf{Statut} \\
+\hline
+Prise de RDV en ligne sans authentification & ✓ \\
+\hline
+Consultation liste médecins avec spécialités & ✓ \\
+\hline
+Authentification JWT avec RBAC & ✓ \\
+\hline
+Gestion médecins (CRUD) - Admin & ✓ \\
+\hline
+Gestion utilisateurs (CRUD) - Admin & ✓ \\
+\hline
+Notifications email automatiques & ✓ \\
+\hline
+Facturation et gestion paiements & ✓ \\
+\hline
+Architecture microservices avec 6 services & ✓ \\
+\hline
+Communication synchrone (OpenFeign) & ✓ \\
+\hline
+Communication asynchrone (RabbitMQ) & ✓ \\
+\hline
+Patterns de résilience (Circuit Breaker) & ✓ \\
+\hline
+Interface responsive (React) & ✓ \\
+\hline
+\end{tabular}
+\end{table}
+
+\section{Points Forts}
+
+\textbf{Architecture évolutive :} Les microservices permettent un scaling indépendant et des déploiements isolés sans interruption globale.
+
+\textbf{Résilience :} Les patterns de tolérance aux pannes (Circuit Breaker, Retry) assurent la disponibilité même en cas de défaillance partielle.
+
+\textbf{Sécurité :} JWT avec RBAC garantit un contrôle d'accès rigoureux. Validation centralisée dans API Gateway.
+
+\textbf{Performance :} Architecture réactive avec Spring Cloud Gateway, communication asynchrone pour opérations non-bloquantes.
+
+\textbf{Maintenabilité :} Code modulaire avec séparation claire des responsabilités, tests automatisés, logs structurés.
+
+\section{Limitations et Améliorations Possibles}
+
+\textbf{Gestion des disponibilités :} Actuellement simplifiée. Amélioration : système de créneaux horaires configurables par médecin avec gestion des indisponibilités.
+
+\textbf{Scalabilité des bases de données :} PostgreSQL unique par service. Amélioration : réplication master-slave, sharding pour très grandes volumétries.
+
+\textbf{Monitoring et observabilité :} Logs basiques. Amélioration : intégration ELK Stack (Elasticsearch, Logstash, Kibana) pour centralisation et visualisation, distributed tracing avec Sleuth et Zipkin.
+
+\textbf{Déploiement :} Actuellement manuel. Amélioration : conteneurisation Docker, orchestration Kubernetes, CI/CD avec Jenkins/GitLab CI.
+
+\section{Performance}
+
+Tests de charge effectués : 500 utilisateurs simultanés, temps de réponse moyen < 1.5s, taux de succès 99.2\%, pas de dégradation significative jusqu'à 1000 utilisateurs.
+
+% ============================================
+% CONCLUSION
+% ============================================
+\chapter*{Conclusion et Perspectives}
+\addcontentsline{toc}{chapter}{Conclusion et Perspectives}
+
+\section*{Bilan du Projet}
+
+Ce projet a permis de concevoir et réaliser un système complet de prise de rendez-vous médical basé sur une architecture microservices moderne. Les objectifs fixés ont été atteints : développement d'une solution web intuitive, implémentation d'une architecture robuste avec six microservices, mise en place d'une authentification sécurisée JWT, intégration de patterns de résilience, et développement de modules de notification et facturation automatisés.
+
+L'architecture adoptée démontre les avantages des microservices : scalabilité granulaire, résilience face aux défaillances, évolutivité technologique et maintenabilité accrue. Le système répond aux besoins fonctionnels et non-fonctionnels identifiés, tout en offrant une base solide pour évolutions futures.
+
+\section*{Apports Personnels}
+
+Ce projet m'a permis d'acquérir une expertise approfondie en : (1) Architecture microservices et patterns de conception distribuée, (2) Technologies Spring Boot et Spring Cloud, (3) Communication inter-services synchrone et asynchrone, (4) Patterns de résilience (Circuit Breaker, Retry, Timeout), (5) Sécurité applicative avec JWT et RBAC, (6) Développement frontend avec React et Material-UI.
+
+\section*{Perspectives d'Évolution}
+
+\textbf{À court terme :}
+
+\begin{itemize}
+    \item \textbf{Conteneurisation :} Dockerisation des services pour déploiement simplifié et portabilité
+    \item \textbf{Monitoring avancé :} Intégration Prometheus et Grafana pour métriques temps réel
+    \item \textbf{Gestion disponibilités :} Système de créneaux horaires configurables par médecin
+    \item \textbf{API Documentation :} Intégration Swagger/OpenAPI pour documentation automatique
+    \item \textbf{Tests E2E :} Mise en place de tests end-to-end avec Selenium ou Cypress
+\end{itemize}
+
+% ============================================
+% BIBLIOGRAPHIE
+% ============================================
+\begin{thebibliography}{99}
+\addcontentsline{toc}{chapter}{Bibliographie}
+
+\bibitem{springboot}
+Spring Team, \textit{Spring Boot Reference Documentation}, Version 3.2.0, \url{https://spring.io/projects/spring-boot}, 2024.
+
+\bibitem{springcloud}
+Spring Team, \textit{Spring Cloud Reference Documentation}, \url{https://spring.io/projects/spring-cloud}, 2024.
+
+\bibitem{react}
+Meta Open Source, \textit{React Documentation}, Version 18, \url{https://react.dev}, 2024.
+
+\bibitem{rabbitmq}
+VMware, \textit{RabbitMQ Documentation}, \url{https://www.rabbitmq.com/documentation.html}, 2024.
+
+\bibitem{postgresql}
+PostgreSQL Global Development Group, \textit{PostgreSQL Documentation}, Version 15, \url{https://www.postgresql.org/docs/}, 2024.
+
+\bibitem{newman}
+Sam Newman, \textit{Building Microservices: Designing Fine-Grained Systems}, 2ème édition, O'Reilly Media, 2021.
+
+\bibitem{richardson}
+Chris Richardson, \textit{Microservices Patterns: With Examples in Java}, Manning Publications, 2018.
+
+\bibitem{jwt}
+IETF, \textit{JSON Web Token (JWT) - RFC 7519}, \url{https://datatracker.ietf.org/doc/html/rfc7519}, 2015.
+
+\bibitem{resilience4j}
+Resilience4j Team, \textit{Resilience4j Documentation}, \url{https://resilience4j.readme.io/}, 2024.
+
+\end{thebibliography}
+
+\end{document}
