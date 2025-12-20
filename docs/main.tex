@@ -1,0 +1,314 @@
+\documentclass[12pt,a4paper]{report}
+
+% Packages
+\usepackage[utf8]{inputenc}
+\usepackage[french]{babel}
+\usepackage[T1]{fontenc}
+\usepackage{graphicx}
+\usepackage{geometry}
+\usepackage{setspace}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{float}
+\usepackage{acronym}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+
+% Geometry
+\geometry{
+    left=3cm,
+    right=2.5cm,
+    top=2.5cm,
+    bottom=2.5cm
+}
+
+% Line spacing
+\onehalfspacing
+
+% Hyperref setup
+\hypersetup{
+    colorlinks=true,
+    linkcolor=black,
+    filecolor=magenta,
+    urlcolor=blue,
+    citecolor=blue,
+    pdftitle={Système de Prise de Rendez-vous Médical - Architecture Microservices},
+    pdfauthor={Sohaib Mokhliss},
+}
+
+% Graphics path
+\graphicspath{{figures/}}
+
+% Header and footer
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\leftmark}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.5pt}
+
+% Listings setup for code
+\lstset{
+    basicstyle=\ttfamily\small,
+    keywordstyle=\color{blue},
+    commentstyle=\color{green!50!black},
+    stringstyle=\color{red},
+    showstringspaces=false,
+    breaklines=true,
+    frame=single,
+    numbers=left,
+    numberstyle=\tiny\color{gray}
+}
+
+% Title page information
+\title{Conception et Réalisation d'un Système de Prise de Rendez-vous Médical Basé sur une Architecture Microservices}
+\author{Sohaib Mokhliss}
+\date{Année Universitaire 2024-2025}
+
+\begin{document}
+
+% ============================================
+% TITLE PAGE
+% ============================================
+\begin{titlepage}
+    \centering
+    \vspace*{1cm}
+    
+    {\LARGE\bfseries Royaume du Maroc\par}
+    \vspace{0.3cm}
+    {\large Université [Nom de l'Université]\par}
+    \vspace{0.2cm}
+    {\large École [Nom de l'École]\par}
+    \vspace{0.2cm}
+    {\large Département [Nom du Département]\par}
+    
+    \vspace{2cm}
+    
+    {\Large\bfseries Projet de Fin d'Études\par}
+    \vspace{0.5cm}
+    {\large Pour l'obtention du diplôme d'Ingénieur d'État\par}
+    
+    \vspace{1.5cm}
+    
+    {\Huge\bfseries Conception et Réalisation d'un Système\\[0.3cm]
+    de Prise de Rendez-vous Médical\\[0.3cm]
+    Basé sur une Architecture Microservices\par}
+    
+    \vspace{2cm}
+    
+    {\large\bfseries Réalisé par:\par}
+    {\Large Sohaib MOKHLISS\par}
+    
+    \vspace{1cm}
+    
+    {\large\bfseries Encadré par:\par}
+    {\Large Pr. Abdelaziz ETTAOUFIK\par}
+    
+    \vfill
+    
+    {\large Année Universitaire 2024-2025\par}
+    
+\end{titlepage}
+
+% ============================================
+% REMERCIEMENTS
+% ============================================
+\chapter*{Remerciements}
+\addcontentsline{toc}{chapter}{Remerciements}
+
+Je tiens à exprimer ma profonde gratitude à tous ceux qui ont contribué, de près ou de loin, à la réalisation de ce projet de fin d'études.
+
+Mes sincères remerciements s'adressent en premier lieu à mon encadrant, Monsieur Abdelaziz ETTAOUFIK, pour ses précieux conseils, sa disponibilité et son soutien tout au long de ce travail. Ses orientations m'ont permis d'approfondir mes connaissances en architecture microservices et de mener à bien ce projet.
+
+Je remercie également tous les professeurs du département pour la qualité de l'enseignement dont j'ai bénéficié durant ma formation, qui m'a permis d'acquérir les compétences nécessaires pour réaliser ce projet.
+
+Je ne saurais oublier mes parents et ma famille pour leur soutien inconditionnel, leurs encouragements constants et leur patience tout au long de mes études.
+
+Enfin, je remercie tous mes collègues et amis qui m'ont accompagné durant ce parcours académique et qui ont contribué à créer un environnement d'apprentissage enrichissant.
+
+% ============================================
+% RÉSUMÉ (FR)
+% ============================================
+\chapter*{Résumé}
+\addcontentsline{toc}{chapter}{Résumé}
+
+La digitalisation du secteur de la santé est devenue un enjeu majeur pour améliorer l'accès aux soins et optimiser la gestion des établissements médicaux. Ce projet présente la conception et la réalisation d'un système complet de prise de rendez-vous médical en ligne, basé sur une architecture microservices moderne et évolutive.
+
+Le système développé permet aux patients de consulter la disponibilité des médecins et de prendre des rendez-vous en ligne de manière simple et intuitive. Il intègre également des fonctionnalités avancées de gestion pour les administrateurs et les réceptionnistes, incluant la gestion des médecins, des utilisateurs, et un système de facturation automatisé.
+
+L'architecture adoptée repose sur six microservices indépendants (Authentification, Gestion des Docteurs, Gestion des Rendez-vous, Notifications, Facturation) orchestrés via une API Gateway et un service de découverte Eureka. La communication entre services s'effectue de manière synchrone via OpenFeign et asynchrone via RabbitMQ pour garantir la résilience et la scalabilité du système.
+
+Le projet utilise des technologies modernes et éprouvées : Spring Boot 3.2 et Spring Cloud pour le backend, React 18 pour le frontend, PostgreSQL pour la persistance des données, et RabbitMQ pour le messaging asynchrone. L'authentification est sécurisée par JWT avec un contrôle d'accès basé sur les rôles (RBAC).
+
+Des patterns de résilience comme le Circuit Breaker ont été implémentés pour garantir la disponibilité du système même en cas de défaillance partielle. Le système inclut également un module de notification automatique par email pour informer les patients de leurs rendez-vous et des factures associées.
+
+\textbf{Mots-clés :} Microservices, Spring Boot, Architecture distribuée, E-Santé, React, RabbitMQ, JWT, Circuit Breaker, API Gateway, Système de rendez-vous médical
+
+% ============================================
+% ABSTRACT (EN)
+% ============================================
+\chapter*{Abstract}
+\addcontentsline{toc}{chapter}{Abstract}
+
+The digitalization of the healthcare sector has become a major challenge to improve access to care and optimize the management of medical facilities. This project presents the design and implementation of a complete online medical appointment system, based on a modern and scalable microservices architecture.
+
+The developed system allows patients to check doctors' availability and book appointments online in a simple and intuitive way. It also integrates advanced management features for administrators and receptionists, including doctor management, user management, and an automated billing system.
+
+The adopted architecture is based on six independent microservices (Authentication, Doctor Management, Appointment Management, Notifications, Billing) orchestrated through an API Gateway and a Eureka discovery service. Communication between services is performed synchronously via OpenFeign and asynchronously via RabbitMQ to ensure system resilience and scalability.
+
+The project uses modern and proven technologies: Spring Boot 3.2 and Spring Cloud for the backend, React 18 for the frontend, PostgreSQL for data persistence, and RabbitMQ for asynchronous messaging. Authentication is secured with JWT using role-based access control (RBAC).
+
+Resilience patterns such as Circuit Breaker have been implemented to ensure system availability even in case of partial failure. The system also includes an automatic email notification module to inform patients about their appointments and associated invoices.
+
+\textbf{Keywords:} Microservices, Spring Boot, Distributed Architecture, E-Health, React, RabbitMQ, JWT, Circuit Breaker, API Gateway, Medical Appointment System
+
+% ============================================
+% TABLE DES MATIÈRES
+% ============================================
+\tableofcontents
+
+% ============================================
+% LISTE DES FIGURES
+% ============================================
+\listoffigures
+
+% ============================================
+% LISTE DES TABLEAUX
+% ============================================
+\listoftables
+
+% ============================================
+% LISTE DES ACRONYMES
+% ============================================
+\chapter*{Liste des Acronymes}
+\addcontentsline{toc}{chapter}{Liste des Acronymes}
+
+\begin{acronym}[AMQP]
+    \acro{AMQP}{Advanced Message Queuing Protocol}
+    \acro{API}{Application Programming Interface}
+    \acro{CORS}{Cross-Origin Resource Sharing}
+    \acro{CRUD}{Create, Read, Update, Delete}
+    \acro{DTO}{Data Transfer Object}
+    \acro{HTTP}{HyperText Transfer Protocol}
+    \acro{HTTPS}{HyperText Transfer Protocol Secure}
+    \acro{JPA}{Java Persistence API}
+    \acro{JSON}{JavaScript Object Notation}
+    \acro{JWT}{JSON Web Token}
+    \acro{MVC}{Model-View-Controller}
+    \acro{ORM}{Object-Relational Mapping}
+    \acro{RBAC}{Role-Based Access Control}
+    \acro{REST}{Representational State Transfer}
+    \acro{SQL}{Structured Query Language}
+    \acro{UML}{Unified Modeling Language}
+    \acro{UI}{User Interface}
+    \acro{URL}{Uniform Resource Locator}
+\end{acronym}
+
+% ============================================
+% INTRODUCTION
+% ============================================
+\include{chapters/introduction}
+
+% ============================================
+% CHAPITRES
+% ============================================
+\include{chapters/chapitre1_existant_besoins}
+\include{chapters/chapitre2_architecture}
+\include{chapters/chapitre3_conception}
+\include{chapters/chapitre4_choix_technologiques}
+\include{chapters/chapitre5_realisation}
+\include{chapters/chapitre6_tests_validation}
+\include{chapters/chapitre7_resultats_discussion}
+
+% ============================================
+% CONCLUSION
+% ============================================
+\include{chapters/conclusion_perspectives}
+
+% ============================================
+% BIBLIOGRAPHIE
+% ============================================
+\begin{thebibliography}{99}
+\addcontentsline{toc}{chapter}{Bibliographie}
+
+\bibitem{springboot}
+Spring Team,
+\textit{Spring Boot Reference Documentation},
+Version 3.2.0,
+\url{https://spring.io/projects/spring-boot},
+2024.
+
+\bibitem{springcloud}
+Spring Team,
+\textit{Spring Cloud Reference Documentation},
+\url{https://spring.io/projects/spring-cloud},
+2024.
+
+\bibitem{react}
+Meta Open Source,
+\textit{React Documentation},
+Version 18,
+\url{https://react.dev},
+2024.
+
+\bibitem{rabbitmq}
+VMware,
+\textit{RabbitMQ Documentation},
+\url{https://www.rabbitmq.com/documentation.html},
+2024.
+
+\bibitem{postgresql}
+PostgreSQL Global Development Group,
+\textit{PostgreSQL Documentation},
+Version 15,
+\url{https://www.postgresql.org/docs/},
+2024.
+
+\bibitem{newman}
+Sam Newman,
+\textit{Building Microservices: Designing Fine-Grained Systems},
+2ème édition,
+O'Reilly Media,
+2021.
+
+\bibitem{richardson}
+Chris Richardson,
+\textit{Microservices Patterns: With Examples in Java},
+Manning Publications,
+2018.
+
+\bibitem{jwt}
+IETF,
+\textit{JSON Web Token (JWT) - RFC 7519},
+\url{https://datatracker.ietf.org/doc/html/rfc7519},
+2015.
+
+\bibitem{resilience4j}
+Resilience4j Team,
+\textit{Resilience4j Documentation},
+\url{https://resilience4j.readme.io/},
+2024.
+
+\bibitem{eureka}
+Netflix,
+\textit{Eureka - Service Discovery},
+\url{https://github.com/Netflix/eureka},
+2024.
+
+\bibitem{feign}
+OpenFeign,
+\textit{OpenFeign Documentation},
+\url{https://github.com/OpenFeign/feign},
+2024.
+
+\bibitem{docker}
+Docker Inc.,
+\textit{Docker Documentation},
+\url{https://docs.docker.com/},
+2024.
+
+\end{thebibliography}
+
+\end{document}

@@ -1,0 +1,288 @@
+\chapter{Architecture Générale du Système}
+
+\section{Introduction}
+
+Ce chapitre présente l'architecture générale de notre système de prise de rendez-vous médical. Nous commençons par exposer les principes fondamentaux de l'architecture microservices, puis nous décrivons la structure globale de notre système, les différents services qui le composent, et enfin les modes de communication entre ces services.
+
+\section{Principes de l'Architecture Microservices}
+
+\subsection{Définition}
+
+L'architecture microservices est un style architectural qui structure une application comme une collection de services faiblement couplés et hautement cohésifs. Chaque service est :
+
+\begin{itemize}
+    \item \textbf{Indépendant :} Peut être développé, déployé et mis à l'échelle de manière autonome
+    \item \textbf{Responsable d'une fonction métier :} Chaque service encapsule une capacité métier spécifique
+    \item \textbf{Communicant via des API :} Les services interagissent par des interfaces bien définies (REST, messaging)
+    \item \textbf{Possédant sa propre base de données :} Garantit l'autonomie et évite les couplages par la donnée
+\end{itemize}
+
+\subsection{Avantages de l'approche microservices}
+
+Pour notre projet, l'architecture microservices présente plusieurs avantages décisifs :
+
+\begin{itemize}
+    \item \textbf{Scalabilité granulaire :} Possibilité de dimensionner uniquement les services sous forte charge (ex : service RDV en période de forte affluence)
+    
+    \item \textbf{Résilience :} La défaillance d'un service (ex : notifications) n'affecte pas les fonctionnalités critiques (prise de rendez-vous)
+    
+    \item \textbf{Évolutivité technologique :} Chaque service peut utiliser la stack technologique la plus adaptée à son contexte
+    
+    \item \textbf{Déploiement indépendant :} Mise en production d'évolutions sans arrêt complet du système
+    
+    \item \textbf{Organisation d'équipe :} Équipes autonomes responsables de services spécifiques
+    
+    \item \textbf{Maintenabilité :} Code base réduite par service, plus facile à comprendre et à maintenir
+\end{itemize}
+
+\subsection{Défis et solutions}
+
+L'architecture microservices introduit également des défis qu'il faut adresser :
+
+\begin{table}[H]
+\centering
+\caption{Défis des microservices et solutions adoptées}
+\label{tab:challenges}
+\begin{tabular}{|p{5cm}|p{8cm}|}
+\hline
+\textbf{Défi} & \textbf{Solution adoptée} \\
+\hline
+Découverte de services & Eureka Server pour l'enregistrement et la découverte automatique \\
+\hline
+Point d'entrée unique & API Gateway avec Spring Cloud Gateway \\
+\hline
+Gestion de la sécurité & JWT avec validation centralisée au niveau de la Gateway \\
+\hline
+Cohérence des données & Communication asynchrone via RabbitMQ pour la propagation d'événements \\
+\hline
+Tolérance aux pannes & Resilience4j (Circuit Breaker, Retry, Timeout) \\
+\hline
+Traçabilité des requêtes & Logs structurés et corrélation par request ID \\
+\hline
+\end{tabular}
+\end{table}
+
+\section{Vue d'Ensemble de l'Architecture}
+
+Notre système est composé de six microservices métier, accompagnés de composants d'infrastructure essentiels. La Figure~\ref{fig:architecture} illustre l'architecture globale du système.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{diagrams/1-architecture-systeme.png}
+    \caption{Architecture générale du système}
+    \label{fig:architecture}
+\end{figure}
+
+\subsection{Composants du système}
+
+\subsubsection{Frontend (React - Port 3000)}
+
+L'interface utilisateur développée en React constitue le point d'entrée pour tous les utilisateurs du système (patients, réceptionnistes, administrateurs). Elle communique exclusivement avec l'API Gateway via des requêtes HTTP/HTTPS.
+
+\subsubsection{API Gateway (Spring Cloud Gateway - Port 8080)}
+
+L'API Gateway joue le rôle de point d'entrée unique pour toutes les requêtes provenant du frontend. Ses responsabilités incluent :
+
+\begin{itemize}
+    \item \textbf{Routage :} Redirection des requêtes vers les services appropriés
+    \item \textbf{Authentification :} Validation des tokens JWT
+    \item \textbf{Autorisation :} Vérification des rôles et permissions
+    \item \textbf{CORS :} Gestion des politiques de partage de ressources
+    \item \textbf{Load Balancing :} Répartition de charge entre les instances de services
+\end{itemize}
+
+Configuration des routes :
+\begin{itemize}
+    \item \texttt{/api/auth/**} → Auth Service
+    \item \texttt{/api/docteurs/**} → Docteur Service
+    \item \texttt{/api/rdv/**} → RDV Service
+    \item \texttt{/api/notifications/**} → Notification Service
+    \item \texttt{/api/billing/**} → Billing Service
+\end{itemize}
+
+\subsubsection{Eureka Server (Port 8761)}
+
+Le serveur Eureka implémente le pattern Service Discovery. Chaque microservice s'enregistre automatiquement au démarrage, permettant :
+
+\begin{itemize}
+    \item La découverte dynamique des instances de services
+    \item Le load balancing côté client
+    \item Le health checking et la détection automatique des services défaillants
+\end{itemize}
+
+\subsubsection{Microservices métier}
+
+\paragraph{Auth Service (Port 8084)}
+Responsable de l'authentification et de la gestion des utilisateurs. Il maintient une base de données PostgreSQL (authdb) contenant les comptes utilisateurs avec leurs rôles et informations d'identification chiffrées.
+
+\paragraph{Docteur Service (Port 8081)}
+Gère le référentiel des médecins (CRUD). Les données sont persistées dans une base PostgreSQL dédiée (docteurdb). Ce service expose des endpoints publics pour la consultation des médecins.
+
+\paragraph{RDV Service (Port 8082)}
+Cœur du système, ce service gère le cycle de vie complet des rendez-vous. Il communique avec le Docteur Service de manière synchrone (via Feign) pour valider l'existence des médecins, et publie des événements asynchrones dans RabbitMQ pour notifier les autres services. Base de données : PostgreSQL (rdvdb).
+
+\paragraph{Notification Service (Port 8083)}
+Service asynchrone qui écoute les événements provenant de RabbitMQ (création, modification, annulation de RDV ; création de facture ; confirmation de paiement) et envoie des emails via l'API Resend. Ce service ne possède pas de base de données propre.
+
+\paragraph{Billing Service (Port 8085)}
+Gère la facturation et les paiements. À la réception d'événements de création de rendez-vous, il génère automatiquement des factures et les persiste dans PostgreSQL (billingdb). Il publie également des événements pour les notifications.
+
+\subsubsection{Infrastructure de messaging}
+
+\paragraph{RabbitMQ}
+Message broker AMQP utilisé pour la communication asynchrone entre services. Il garantit :
+\begin{itemize}
+    \item La persistance des messages
+    \item La livraison garantie (acknowledgment)
+    \item Le découplage temporel entre producteurs et consommateurs
+\end{itemize}
+
+\subsection{Bases de données}
+
+Conformément au principe "Database per Service", chaque microservice possède sa propre base de données PostgreSQL :
+
+\begin{table}[H]
+\centering
+\caption{Bases de données par service}
+\label{tab:databases}
+\begin{tabular}{|l|l|l|}
+\hline
+\textbf{Service} & \textbf{Base de données} & \textbf{Tables principales} \\
+\hline
+Auth Service & authdb & users \\
+\hline
+Docteur Service & docteurdb & docteurs \\
+\hline
+RDV Service & rdvdb & rdv \\
+\hline
+Billing Service & billingdb & invoices, payments, pricing \\
+\hline
+\end{tabular}
+\end{table}
+
+Cette séparation garantit l'autonomie des services et évite les couplages par la base de données, au prix d'une cohérence éventuelle gérée par la communication inter-services.
+
+\section{Communication Inter-Services}
+
+Notre architecture implémente deux modes de communication complémentaires : synchrone et asynchrone.
+
+\subsection{Communication synchrone}
+
+La communication synchrone est utilisée lorsqu'une réponse immédiate est nécessaire. Elle est implémentée via des appels REST utilisant OpenFeign.
+
+\subsubsection{OpenFeign}
+
+OpenFeign est un client REST déclaratif qui simplifie les appels entre microservices. Dans notre système :
+
+\begin{itemize}
+    \item Le \textbf{RDV Service} appelle le \textbf{Docteur Service} pour valider l'existence d'un médecin lors de la création d'un rendez-vous
+    \item Cette communication est critique : si le Docteur Service est indisponible, la création de RDV doit échouer de manière contrôlée
+\end{itemize}
+
+\subsubsection{Mécanismes de résilience}
+
+Pour gérer les défaillances potentielles, nous avons implémenté avec Resilience4j :
+
+\begin{itemize}
+    \item \textbf{Circuit Breaker :} Stoppe les appels vers un service défaillant après un seuil d'échecs, permettant au service de récupérer
+    \item \textbf{Retry :} Réessaie automatiquement les requêtes échouées selon une stratégie configurable
+    \item \textbf{Timeout :} Limite le temps d'attente d'une réponse pour éviter les blocages
+\end{itemize}
+
+\subsection{Communication asynchrone}
+
+La communication asynchrone via RabbitMQ est privilégiée pour les opérations non critiques et pour découpler les services.
+
+\subsubsection{Événements métier}
+
+Notre système définit plusieurs types d'événements :
+
+\paragraph{Événements RDV}
+\begin{itemize}
+    \item \texttt{RdvCreatedEvent} : Publié par RDV Service, consommé par Notification et Billing
+    \item \texttt{RdvUpdatedEvent} : Publié par RDV Service, consommé par Notification
+    \item \texttt{RdvDeletedEvent} : Publié par RDV Service, consommé par Notification
+\end{itemize}
+
+\paragraph{Événements Billing}
+\begin{itemize}
+    \item \texttt{InvoiceCreatedEvent} : Publié par Billing Service, consommé par Notification
+    \item \texttt{PaymentConfirmedEvent} : Publié par Billing Service, consommé par Notification
+\end{itemize}
+
+\subsubsection{Topologie RabbitMQ}
+
+Nous utilisons le modèle Exchange/Queue de RabbitMQ :
+
+\begin{itemize}
+    \item \textbf{Exchange type Topic :} Permet le routage flexible des messages selon des patterns
+    \item \textbf{Queues dédiées :} Chaque service consommateur possède sa propre queue
+    \item \textbf{Routing keys :} Permettent de filtrer les événements pertinents
+\end{itemize}
+
+\subsubsection{Avantages de l'approche asynchrone}
+
+\begin{itemize}
+    \item \textbf{Découplage :} Le RDV Service n'a pas besoin de connaître les services consommateurs
+    \item \textbf{Résilience :} Si le Notification Service est arrêté, les messages sont stockés dans RabbitMQ et traités au redémarrage
+    \item \textbf{Scalabilité :} Possibilité d'ajouter plusieurs consommateurs pour traiter les messages en parallèle
+    \item \textbf{Évolutivité :} Nouveaux services peuvent s'abonner aux événements sans modifier le producteur
+\end{itemize}
+
+\section{Flux de données}
+
+La Figure~\ref{fig:flux} illustre un flux de données typique lors de la création d'un rendez-vous.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{diagrams/6-flux-donnees.png}
+    \caption{Flux de données lors de la création d'un rendez-vous}
+    \label{fig:flux}
+\end{figure}
+
+\subsection{Scénario : Création d'un rendez-vous}
+
+\begin{enumerate}
+    \item Le patient soumet le formulaire de prise de rendez-vous depuis l'interface React
+    \item La requête HTTP POST est envoyée à l'API Gateway
+    \item L'API Gateway route la requête vers le RDV Service
+    \item Le RDV Service appelle le Docteur Service (via Feign) pour valider l'existence du médecin
+    \item Si le médecin existe, le RDV Service persiste le rendez-vous dans la base rdvdb
+    \item Le RDV Service publie un événement \texttt{RdvCreatedEvent} dans RabbitMQ
+    \item Le Notification Service consomme l'événement et envoie un email de confirmation via Resend
+    \item Le Billing Service consomme l'événement et génère une facture dans billingdb
+    \item Le Billing Service publie un événement \texttt{InvoiceCreatedEvent}
+    \item Le Notification Service consomme cet événement et envoie un email avec la facture
+\end{enumerate}
+
+Ce flux illustre la combinaison des communications synchrone (validation médecin) et asynchrone (notifications, facturation), garantissant à la fois la cohérence des données critiques et le découplage des fonctionnalités secondaires.
+
+\section{Patterns architecturaux appliqués}
+
+\subsection{API Gateway Pattern}
+
+L'API Gateway centralise l'accès aux microservices, évitant au client de connaître l'emplacement de chaque service et permettant une gestion centralisée de la sécurité et du routage.
+
+\subsection{Service Discovery Pattern}
+
+Eureka implémente le Service Discovery, permettant aux services de se localiser dynamiquement sans configuration statique des adresses IP.
+
+\subsection{Event-Driven Architecture}
+
+L'utilisation de RabbitMQ pour propager les événements métier permet un découplage temporel et logique entre les services.
+
+\subsection{Database per Service Pattern}
+
+Chaque service possède sa propre base de données, garantissant son autonomie et évitant les couplages par la donnée.
+
+\subsection{Circuit Breaker Pattern}
+
+Resilience4j implémente le Circuit Breaker pour protéger le système des défaillances en cascade.
+
+\section{Conclusion}
+
+Ce chapitre a présenté l'architecture générale de notre système de prise de rendez-vous médical basée sur les principes des microservices. L'architecture proposée offre un équilibre entre complexité et bénéfices, notamment en termes de scalabilité, résilience et maintenabilité.
+
+L'utilisation combinée de l'API Gateway, du Service Discovery, et des communications synchrone et asynchrone permet de répondre efficacement aux besoins fonctionnels et non-fonctionnels identifiés au chapitre précédent.
+
+Le chapitre suivant détaillera la conception de chaque service à travers des diagrammes UML et la description des modèles de données.

@@ -1,0 +1,473 @@
+\chapter{Conception du Système}
+
+\section{Introduction}
+
+Ce chapitre détaille la conception de notre système à travers des diagrammes UML et la description précise des modèles de données. Nous présentons d'abord le modèle d'entités global, puis nous détaillons la conception de chaque microservice avec ses diagrammes de classes. Enfin, nous décrivons les patterns de conception utilisés.
+
+\section{Modèle d'Entités Global}
+
+Le modèle d'entités représente l'ensemble des entités métier du système et leurs relations. Bien que chaque service possède sa propre base de données, il est important de comprendre les relations logiques entre les entités pour assurer la cohérence globale du système.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{diagrams/2-modele-entites.png}
+    \caption{Modèle d'entités du système}
+    \label{fig:entites}
+\end{figure}
+
+La Figure~\ref{fig:entites} illustre les principales entités du système et leurs relations :
+
+\begin{itemize}
+    \item \textbf{User} : Représente les utilisateurs authentifiés du système (administrateurs, réceptionnistes)
+    \item \textbf{Docteur} : Contient les informations des médecins
+    \item \textbf{Rdv (Rendez-vous)} : Entité centrale représentant un rendez-vous entre un patient et un médecin
+    \item \textbf{Invoice (Facture)} : Représente une facture générée pour un rendez-vous
+    \item \textbf{Payment} : Enregistre les paiements effectués sur une facture
+    \item \textbf{Pricing} : Définit les tarifs applicables selon différents critères
+\end{itemize}
+
+\subsection{Relations entre entités}
+
+\begin{itemize}
+    \item Un \textbf{Docteur} peut avoir plusieurs \textbf{Rendez-vous} (relation 1:N)
+    \item Un \textbf{Rendez-vous} est associé à une seule \textbf{Facture} (relation 1:1)
+    \item Une \textbf{Facture} peut avoir plusieurs \textbf{Paiements} (relation 1:N, pour gérer les paiements partiels)
+    \item Un \textbf{Pricing} définit les tarifs applicables par type de consultation
+\end{itemize}
+
+\section{Conception du Service d'Authentification}
+
+Le service d'authentification est responsable de la gestion des utilisateurs et de la sécurité du système.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{diagrams/7-classes-auth-service.png}
+    \caption{Diagramme de classes - Auth Service}
+    \label{fig:auth-classes}
+\end{figure}
+
+\subsection{Composants du Auth Service}
+
+Le diagramme de la Figure~\ref{fig:auth-classes} présente l'architecture du service d'authentification structurée en couches :
+
+\subsubsection{Couche Modèle}
+
+\paragraph{User}
+Entité JPA représentant un utilisateur du système :
+\begin{itemize}
+    \item \texttt{id} : Identifiant unique (Long)
+    \item \texttt{email} : Email unique de l'utilisateur
+    \item \texttt{password} : Mot de passe chiffré (BCrypt)
+    \item \texttt{nom}, \texttt{prenom} : Informations d'identité
+    \item \texttt{role} : Rôle de l'utilisateur (ADMIN, USER)
+    \item \texttt{telephone} : Numéro de téléphone (optionnel)
+\end{itemize}
+
+\subsubsection{Couche DTOs}
+
+\paragraph{AuthRequest}
+DTO pour les requêtes d'authentification :
+\begin{itemize}
+    \item \texttt{email} : Email de connexion
+    \item \texttt{password} : Mot de passe en clair
+\end{itemize}
+
+\paragraph{AuthResponse}
+DTO pour les réponses d'authentification :
+\begin{itemize}
+    \item \texttt{token} : Token JWT généré
+    \item \texttt{email} : Email de l'utilisateur
+    \item \texttt{role} : Rôle attribué
+\end{itemize}
+
+\paragraph{RegisterRequest}
+DTO pour l'inscription d'un nouvel utilisateur :
+\begin{itemize}
+    \item Hérite de \texttt{AuthRequest}
+    \item Ajoute : \texttt{nom}, \texttt{prenom}, \texttt{telephone}, \texttt{role}
+\end{itemize}
+
+\subsubsection{Couche Repository}
+
+\paragraph{UserRepository}
+Interface Spring Data JPA pour l'accès aux données :
+\begin{itemize}
+    \item \texttt{findByEmail(String email)} : Recherche un utilisateur par email
+    \item Hérite des méthodes CRUD de \texttt{JpaRepository}
+\end{itemize}
+
+\subsubsection{Couche Service}
+
+\paragraph{AuthService}
+Service métier gérant la logique d'authentification :
+\begin{itemize}
+    \item \texttt{register(RegisterRequest)} : Inscription d'un nouvel utilisateur
+    \item \texttt{login(AuthRequest)} : Authentification et génération du JWT
+    \item \texttt{validateToken(String token)} : Validation d'un token JWT
+\end{itemize}
+
+\paragraph{UserService}
+Service métier pour la gestion des utilisateurs :
+\begin{itemize}
+    \item \texttt{getAllUsers()} : Liste de tous les utilisateurs
+    \item \texttt{getUserById(Long id)} : Récupération d'un utilisateur par ID
+    \item \texttt{createUser(User)} : Création d'un utilisateur (admin)
+    \item \texttt{updateUser(Long id, User)} : Mise à jour d'un utilisateur
+    \item \texttt{deleteUser(Long id)} : Suppression d'un utilisateur
+\end{itemize}
+
+\paragraph{JwtService}
+Service utilitaire pour la gestion des JWT :
+\begin{itemize}
+    \item \texttt{generateToken(User)} : Génère un token JWT pour un utilisateur
+    \item \texttt{extractEmail(String token)} : Extrait l'email du token
+    \item \texttt{validateToken(String token)} : Valide la signature et l'expiration
+\end{itemize}
+
+\subsubsection{Couche Controller}
+
+\paragraph{AuthController}
+Expose les endpoints d'authentification :
+\begin{itemize}
+    \item \texttt{POST /api/auth/register} : Inscription
+    \item \texttt{POST /api/auth/login} : Connexion
+    \item \texttt{GET /api/auth/validate} : Validation de token
+    \item \texttt{GET /api/auth/me} : Profil de l'utilisateur connecté
+\end{itemize}
+
+\paragraph{UserController}
+Expose les endpoints de gestion des utilisateurs (réservé aux admins) :
+\begin{itemize}
+    \item \texttt{GET /api/users} : Liste des utilisateurs
+    \item \texttt{GET /api/users/\{id\}} : Détails d'un utilisateur
+    \item \texttt{POST /api/users} : Créer un utilisateur
+    \item \texttt{PUT /api/users/\{id\}} : Modifier un utilisateur
+    \item \texttt{DELETE /api/users/\{id\}} : Supprimer un utilisateur
+\end{itemize}
+
+\section{Conception du Service Docteur}
+
+Le service Docteur gère le référentiel des médecins du système.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.80\textwidth]{diagrams/4-classes-docteur-service.png}
+    \caption{Diagramme de classes - Docteur Service}
+    \label{fig:docteur-classes}
+\end{figure}
+
+\subsection{Composants du Docteur Service}
+
+La Figure~\ref{fig:docteur-classes} montre une architecture simple suivant le pattern MVC :
+
+\subsubsection{Entité Docteur}
+\begin{itemize}
+    \item \texttt{id} : Identifiant unique (Long)
+    \item \texttt{nom}, \texttt{prenom} : Nom complet du médecin
+    \item \texttt{specialite} : Spécialité médicale (Cardiologie, Pédiatrie, etc.)
+    \item \texttt{email}, \texttt{telephone} : Coordonnées de contact
+\end{itemize}
+
+\subsubsection{DocteurRepository}
+Interface Spring Data JPA offrant les opérations CRUD standards.
+
+\subsubsection{DocteurService}
+Service métier implémentant la logique de gestion des médecins :
+\begin{itemize}
+    \item \texttt{getAllDocteurs()} : Liste tous les médecins
+    \item \texttt{getDocteurById(Long id)} : Récupère un médecin par ID
+    \item \texttt{createDocteur(Docteur)} : Crée un nouveau médecin
+    \item \texttt{updateDocteur(Long id, Docteur)} : Met à jour un médecin
+    \item \texttt{deleteDocteur(Long id)} : Supprime un médecin
+\end{itemize}
+
+\subsubsection{DocteurController}
+Contrôleur REST exposant les endpoints :
+\begin{itemize}
+    \item \texttt{GET /api/docteurs} : Liste des médecins (public)
+    \item \texttt{GET /api/docteurs/\{id\}} : Détails d'un médecin (public)
+    \item \texttt{POST /api/docteurs} : Créer un médecin (admin)
+    \item \texttt{PUT /api/docteurs/\{id\}} : Modifier un médecin (admin)
+    \item \texttt{DELETE /api/docteurs/\{id\}} : Supprimer un médecin (admin)
+\end{itemize}
+
+\section{Conception du Service Rendez-vous}
+
+Le service RDV est le cœur fonctionnel du système, gérant l'ensemble du cycle de vie des rendez-vous.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{diagrams/3-classes-rdv-service.png}
+    \caption{Diagramme de classes - RDV Service}
+    \label{fig:rdv-classes}
+\end{figure}
+
+\subsection{Composants du RDV Service}
+
+La Figure~\ref{fig:rdv-classes} illustre une architecture plus complexe intégrant communication synchrone et asynchrone :
+
+\subsubsection{Entité Rdv}
+\begin{itemize}
+    \item \texttt{id} : Identifiant unique (Long)
+    \item \texttt{patientNom}, \texttt{patientEmail}, \texttt{patientTelephone} : Informations du patient
+    \item \texttt{docteurId} : Référence au médecin (stockée comme clé étrangère logique)
+    \item \texttt{dateRdv} : Date et heure du rendez-vous (LocalDateTime)
+    \item \texttt{motif} : Motif de la consultation
+    \item \texttt{statut} : Statut du rendez-vous (PLANIFIE, CONFIRME, ANNULE, TERMINE)
+\end{itemize}
+
+\subsubsection{DTOs}
+\begin{itemize}
+    \item \texttt{RdvRequest} : DTO pour la création/modification d'un rendez-vous
+    \item \texttt{RdvResponse} : DTO pour les réponses, incluant les informations du docteur
+\end{itemize}
+
+\subsubsection{Feign Client}
+
+\paragraph{DocteurClient}
+Interface Feign pour la communication avec le Docteur Service :
+\begin{itemize}
+    \item \texttt{@FeignClient(name = "docteur-service")} : Déclaration du client
+    \item \texttt{getDocteurById(Long id)} : Récupère les informations d'un médecin
+    \item Configuration du Circuit Breaker pour gérer les défaillances
+\end{itemize}
+
+\subsubsection{Event Publishing}
+
+\paragraph{RabbitMQ Publisher}
+Composant pour publier des événements :
+\begin{itemize}
+    \item \texttt{publishRdvCreated(RdvEvent)} : Publie un événement de création
+    \item \texttt{publishRdvUpdated(RdvEvent)} : Publie un événement de modification
+    \item \texttt{publishRdvDeleted(RdvEvent)} : Publie un événement d'annulation
+\end{itemize}
+
+\subsubsection{RdvService}
+Service métier orchestrant la logique complexe :
+\begin{itemize}
+    \item Validation des données (date future, champs obligatoires)
+    \item Appel synchrone au Docteur Service via Feign
+    \item Persistance du rendez-vous
+    \item Publication d'événements asynchrones via RabbitMQ
+    \item Gestion des erreurs avec Circuit Breaker
+\end{itemize}
+
+\subsubsection{RdvController}
+Contrôleur REST avec endpoints publics et protégés :
+\begin{itemize}
+    \item \texttt{GET /api/rdv} : Liste des rendez-vous (public)
+    \item \texttt{POST /api/rdv} : Créer un rendez-vous (public)
+    \item \texttt{PUT /api/rdv/\{id\}} : Modifier un rendez-vous (protégé)
+    \item \texttt{DELETE /api/rdv/\{id\}} : Annuler un rendez-vous (protégé)
+    \item \texttt{GET /api/rdv/docteur/\{docteurId\}} : Rendez-vous par médecin
+\end{itemize}
+
+\section{Conception du Service Notification}
+
+Le service Notification est un service purement réactif, consommant des événements et envoyant des emails.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{diagrams/5-classes-notification-service.png}
+    \caption{Diagramme de classes - Notification Service}
+    \label{fig:notification-classes}
+\end{figure}
+
+\subsection{Composants du Notification Service}
+
+La Figure~\ref{fig:notification-classes} présente un service sans base de données, focalisé sur le traitement d'événements :
+
+\subsubsection{Event Listeners}
+
+\paragraph{RdvEventListener}
+Écoute les événements liés aux rendez-vous :
+\begin{itemize}
+    \item \texttt{@RabbitListener} sur la queue des événements RDV
+    \item \texttt{onRdvCreated(RdvEvent)} : Traite la création de rendez-vous
+    \item \texttt{onRdvUpdated(RdvEvent)} : Traite la modification
+    \item \texttt{onRdvDeleted(RdvEvent)} : Traite l'annulation
+\end{itemize}
+
+\paragraph{BillingEventListener}
+Écoute les événements liés à la facturation :
+\begin{itemize}
+    \item \texttt{onInvoiceCreated(InvoiceEvent)} : Traite la création de facture
+    \item \texttt{onPaymentConfirmed(PaymentEvent)} : Traite la confirmation de paiement
+\end{itemize}
+
+\subsubsection{EmailService}
+Service responsable de l'envoi des emails :
+\begin{itemize}
+    \item \texttt{sendAppointmentConfirmation()} : Email de confirmation de RDV
+    \item \texttt{sendAppointmentUpdate()} : Email de modification de RDV
+    \item \texttt{sendAppointmentCancellation()} : Email d'annulation de RDV
+    \item \texttt{sendInvoiceNotification()} : Email avec facture
+    \item \texttt{sendPaymentConfirmation()} : Email de confirmation de paiement
+\end{itemize}
+
+\subsubsection{Resend Client}
+Client HTTP pour l'API Resend (service d'envoi d'emails) :
+\begin{itemize}
+    \item Configuration de l'API key
+    \item Formatage des emails au format HTML
+    \item Gestion des erreurs d'envoi
+\end{itemize}
+
+\section{Conception du Service Billing}
+
+Le service Billing gère la facturation et les paiements associés aux rendez-vous.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{diagrams/8-classes-billing-service.png}
+    \caption{Diagramme de classes - Billing Service}
+    \label{fig:billing-classes}
+\end{figure}
+
+\subsection{Composants du Billing Service}
+
+La Figure~\ref{fig:billing-classes} montre un service complexe gérant plusieurs entités métier :
+
+\subsubsection{Entités}
+
+\paragraph{Invoice (Facture)}
+\begin{itemize}
+    \item \texttt{id} : Identifiant unique
+    \item \texttt{invoiceNumber} : Numéro de facture unique généré automatiquement
+    \item \texttt{rdvId} : Référence au rendez-vous
+    \item \texttt{amount} : Montant total
+    \item \texttt{issueDate} : Date d'émission
+    \item \texttt{dueDate} : Date d'échéance
+    \item \texttt{status} : Statut (PENDING, PAID, OVERDUE, CANCELLED)
+    \item \texttt{payments} : Liste des paiements associés (relation 1:N)
+\end{itemize}
+
+\paragraph{Payment}
+\begin{itemize}
+    \item \texttt{id} : Identifiant unique
+    \item \texttt{invoice} : Référence à la facture (relation N:1)
+    \item \texttt{amount} : Montant du paiement
+    \item \texttt{paymentDate} : Date du paiement
+    \item \texttt{paymentMethod} : Méthode (CASH, CARD, BANK\_TRANSFER)
+    \item \texttt{transactionId} : Identifiant de transaction (optionnel)
+\end{itemize}
+
+\paragraph{Pricing}
+\begin{itemize}
+    \item \texttt{id} : Identifiant unique
+    \item \texttt{consultationType} : Type de consultation
+    \item \texttt{basePrice} : Prix de base
+    \item \texttt{specialtyMultiplier} : Multiplicateur selon la spécialité
+\end{itemize}
+
+\subsubsection{Repositories}
+\begin{itemize}
+    \item \texttt{InvoiceRepository} : Accès aux factures
+    \item \texttt{PaymentRepository} : Accès aux paiements
+    \item \texttt{PricingRepository} : Accès aux tarifs
+\end{itemize}
+
+\subsubsection{Services}
+
+\paragraph{InvoiceService}
+\begin{itemize}
+    \item \texttt{generateInvoice(RdvEvent)} : Génère une facture pour un rendez-vous
+    \item \texttt{getInvoiceByRdvId(Long)} : Récupère la facture d'un rendez-vous
+    \item \texttt{getAllInvoices()} : Liste toutes les factures
+    \item \texttt{updateInvoiceStatus(Long, Status)} : Met à jour le statut
+\end{itemize}
+
+\paragraph{PaymentService}
+\begin{itemize}
+    \item \texttt{recordPayment(PaymentRequest)} : Enregistre un paiement
+    \item \texttt{getPaymentsByInvoice(Long)} : Liste les paiements d'une facture
+    \item Calcule automatiquement le solde restant
+    \item Met à jour le statut de la facture si paiement complet
+\end{itemize}
+
+\paragraph{PricingService}
+\begin{itemize}
+    \item \texttt{calculatePrice(ConsultationType)} : Calcule le tarif applicable
+    \item \texttt{getAllPricing()} : Liste tous les tarifs configurés
+\end{itemize}
+
+\subsubsection{Event Listener}
+
+\paragraph{RdvEventListener}
+\begin{itemize}
+    \item Écoute les événements de création de rendez-vous
+    \item Génère automatiquement une facture
+    \item Publie un événement \texttt{InvoiceCreatedEvent}
+\end{itemize}
+
+\subsubsection{Controllers}
+\begin{itemize}
+    \item \texttt{InvoiceController} : Gestion des factures
+    \item \texttt{PaymentController} : Enregistrement et consultation des paiements
+    \item \texttt{PricingController} : Configuration des tarifs (admin)
+\end{itemize}
+
+\section{Patterns de Conception Utilisés}
+
+\subsection{Repository Pattern}
+
+Abstraction de la couche d'accès aux données, implémentée par Spring Data JPA. Avantages :
+\begin{itemize}
+    \item Séparation entre logique métier et persistance
+    \item Facilite les tests avec des repositories mock
+    \item Requêtes générées automatiquement
+\end{itemize}
+
+\subsection{Data Transfer Object (DTO)}
+
+Objets dédiés au transfert de données entre couches :
+\begin{itemize}
+    \item Découplage entre modèle de persistance et API
+    \item Contrôle précis des données exposées
+    \item Validation centralisée des entrées
+\end{itemize}
+
+\subsection{Model-View-Controller (MVC)}
+
+Architecture en trois couches :
+\begin{itemize}
+    \item \textbf{Model} : Entités JPA représentant les données
+    \item \textbf{View} : Réponses JSON (DTOs)
+    \item \textbf{Controller} : Endpoints REST
+\end{itemize}
+
+\subsection{Event-Driven Architecture}
+
+Communication asynchrone par événements :
+\begin{itemize}
+    \item Découplage temporel et logique entre services
+    \item Extensibilité : nouveaux consommateurs sans modification des producteurs
+    \item Résilience : messages persistés et traités ultérieurement en cas d'indisponibilité
+\end{itemize}
+
+\subsection{Circuit Breaker Pattern}
+
+Protection contre les défaillances en cascade :
+\begin{itemize}
+    \item Détection automatique des services défaillants
+    \item Ouverture du circuit après un seuil d'échecs
+    \item Tentatives de récupération progressives
+    \item Réponses de fallback pour maintenir la disponibilité
+\end{itemize}
+
+\subsection{Service Discovery Pattern}
+
+Enregistrement et découverte dynamiques des services :
+\begin{itemize}
+    \item Pas de configuration statique des adresses
+    \item Load balancing automatique
+    \item Health checking et éviction des instances défaillantes
+\end{itemize}
+
+\section{Conclusion}
+
+Ce chapitre a détaillé la conception de chaque microservice à travers des diagrammes de classes UML. Nous avons présenté les entités métier, les DTOs, les repositories, les services, et les contrôleurs de chaque service.
+
+L'architecture en couches, les patterns de conception appliqués (Repository, DTO, MVC, Event-Driven, Circuit Breaker) et la séparation des responsabilités garantissent un système maintenable, testable et évolutif.
+
+Le chapitre suivant justifiera les choix technologiques effectués pour implémenter cette conception.

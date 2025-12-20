@@ -1,0 +1,419 @@
+\chapter{Réalisation et Implémentation}
+
+\section{Introduction}
+
+Ce chapitre présente l'implémentation concrète du système à travers des captures d'écran illustrant les principales fonctionnalités développées. Nous décrivons également les endpoints REST de chaque service et les défis techniques rencontrés lors de l'implémentation.
+
+\section{Interface Utilisateur}
+
+L'interface utilisateur a été conçue pour être intuitive, responsive et accessible. Elle s'adapte aux différents rôles d'utilisateurs (patient, réceptionniste, administrateur) et offre une navigation fluide.
+
+\subsection{Authentification}
+
+\subsubsection{Page de connexion}
+
+La Figure~\ref{fig:login} présente la page de connexion du système. Cette page permet aux utilisateurs authentifiés (administrateurs et réceptionnistes) d'accéder à leurs fonctionnalités respectives.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{ui/login-page-medical-appointment-system.png}
+    \caption{Page de connexion du système}
+    \label{fig:login}
+\end{figure}
+
+\textbf{Fonctionnalités :}
+\begin{itemize}
+    \item Authentification par email et mot de passe
+    \item Validation côté client des champs
+    \item Messages d'erreur clairs en cas d'échec
+    \item Génération et stockage du JWT en cas de succès
+    \item Redirection selon le rôle (admin → gestion, user → dashboard)
+\end{itemize}
+
+\textbf{Implémentation technique :}
+\begin{itemize}
+    \item Appel POST vers \texttt{/api/auth/login}
+    \item Réception du token JWT dans la réponse
+    \item Stockage du token dans localStorage
+    \item Configuration d'Axios pour inclure le token dans les requêtes suivantes
+\end{itemize}
+
+\subsection{Gestion des Utilisateurs (Administrateur)}
+
+\subsubsection{Liste des réceptionnistes}
+
+La Figure~\ref{fig:receptionist-list} montre l'interface de gestion des réceptionnistes réservée aux administrateurs.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{ui/admin-receptionist-management-table.png}
+    \caption{Gestion des réceptionnistes}
+    \label{fig:receptionist-list}
+\end{figure}
+
+\textbf{Fonctionnalités :}
+\begin{itemize}
+    \item Affichage de la liste complète des réceptionnistes
+    \item Colonnes : Nom, Prénom, Email, Téléphone, Rôle
+    \item Actions : Modifier, Supprimer
+    \item Bouton d'ajout d'un nouveau réceptionniste
+    \item Recherche et filtrage (si implémenté)
+\end{itemize}
+
+\subsubsection{Formulaire d'ajout de réceptionniste}
+
+La Figure~\ref{fig:add-receptionist} illustre le formulaire permettant à l'administrateur de créer un nouveau compte réceptionniste.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{ui/admin-add-new-receptionist-form.png}
+    \caption{Formulaire d'ajout d'un réceptionniste}
+    \label{fig:add-receptionist}
+\end{figure}
+
+\textbf{Champs du formulaire :}
+\begin{itemize}
+    \item Nom (obligatoire)
+    \item Prénom (obligatoire)
+    \item Email (obligatoire, unique, validation format)
+    \item Téléphone (optionnel, validation format)
+    \item Mot de passe (obligatoire, minimum 6 caractères)
+    \item Confirmation du mot de passe
+    \item Rôle (sélectionné automatiquement : USER)
+\end{itemize}
+
+\textbf{Validation :}
+\begin{itemize}
+    \item Validation côté client avant soumission
+    \item Validation côté serveur avec messages d'erreur appropriés
+    \item Vérification de l'unicité de l'email
+    \item Chiffrement BCrypt du mot de passe côté serveur
+\end{itemize}
+
+\subsection{Gestion des Médecins}
+
+\subsubsection{Liste des médecins (Vue administrateur)}
+
+La Figure~\ref{fig:admin-doctors} présente l'interface de gestion des médecins accessible aux administrateurs.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{ui/admin-doctor-management-table.png}
+    \caption{Gestion des médecins (Administrateur)}
+    \label{fig:admin-doctors}
+\end{figure}
+
+\textbf{Fonctionnalités :}
+\begin{itemize}
+    \item Liste complète des médecins avec leurs informations
+    \item Colonnes : Nom, Prénom, Spécialité, Email, Téléphone
+    \item Actions CRUD : Ajouter, Modifier, Supprimer
+    \item Interface de gestion complète réservée aux administrateurs
+    \item Tri et recherche par colonnes
+\end{itemize}
+
+\subsubsection{Liste des médecins (Vue réceptionniste)}
+
+La Figure~\ref{fig:receptionist-doctors} montre la vue en lecture seule des médecins pour les réceptionnistes.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{ui/receptionist-doctors-list-view.png}
+    \caption{Liste des médecins (Réceptionniste)}
+    \label{fig:receptionist-doctors}
+\end{figure}
+
+\textbf{Différences avec la vue administrateur :}
+\begin{itemize}
+    \item Consultation uniquement (lecture seule)
+    \item Pas d'actions de modification ou suppression
+    \item Utilisé pour référence lors de la gestion des rendez-vous
+    \item Affichage des spécialités pour orientation des patients
+\end{itemize}
+
+\subsection{Gestion des Rendez-vous}
+
+\subsubsection{Formulaire de prise de rendez-vous}
+
+La Figure~\ref{fig:appointment-form} illustre le formulaire de prise de rendez-vous accessible aux patients sans authentification.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{ui/appointment-booking-form-success.png}
+    \caption{Formulaire de prise de rendez-vous avec confirmation}
+    \label{fig:appointment-form}
+\end{figure}
+
+\textbf{Champs du formulaire :}
+\begin{itemize}
+    \item Nom du patient (obligatoire)
+    \item Email du patient (obligatoire, validation format)
+    \item Téléphone du patient (obligatoire)
+    \item Sélection du médecin (liste déroulante)
+    \item Date du rendez-vous (obligatoire, date future uniquement)
+    \item Heure du rendez-vous (obligatoire)
+    \item Motif de consultation (optionnel)
+\end{itemize}
+
+\textbf{Processus de création :}
+\begin{enumerate}
+    \item Le patient remplit le formulaire
+    \item Validation des données côté client
+    \item Soumission à \texttt{POST /api/rdv}
+    \item Le RDV Service valide l'existence du médecin via Feign
+    \item Persistance du rendez-vous dans rdvdb
+    \item Publication d'un événement \texttt{RdvCreatedEvent} dans RabbitMQ
+    \item Affichage d'un message de confirmation
+    \item Envoi automatique d'un email de confirmation
+    \item Génération automatique d'une facture
+\end{enumerate}
+
+\subsubsection{Liste des rendez-vous}
+
+La Figure~\ref{fig:appointments-list} présente la vue de tous les rendez-vous avec leurs statuts.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{ui/my-appointments-list-with-status.png}
+    \caption{Liste des rendez-vous avec statuts}
+    \label{fig:appointments-list}
+\end{figure}
+
+\textbf{Informations affichées :}
+\begin{itemize}
+    \item Informations du patient (nom, email, téléphone)
+    \item Nom du médecin
+    \item Date et heure du rendez-vous
+    \item Motif de consultation
+    \item Statut (Planifié, Confirmé, Annulé, Terminé)
+    \item Actions : Modifier, Annuler (selon le statut)
+\end{itemize}
+
+\textbf{Statuts des rendez-vous :}
+\begin{itemize}
+    \item \textbf{PLANIFIE} : Rendez-vous créé, en attente de confirmation
+    \item \textbf{CONFIRME} : Rendez-vous confirmé par le médecin/réceptionniste
+    \item \textbf{ANNULE} : Rendez-vous annulé
+    \item \textbf{TERMINE} : Consultation terminée
+\end{itemize}
+
+\subsection{Système de Notifications}
+
+\subsubsection{Emails de confirmation}
+
+La Figure~\ref{fig:email-notifications} montre des exemples d'emails envoyés automatiquement par le système.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{ui/gmail-appointment-confirmation-emails.png}
+    \caption{Emails de confirmation de rendez-vous}
+    \label{fig:email-notifications}
+\end{figure}
+
+\textbf{Types d'emails envoyés :}
+\begin{itemize}
+    \item \textbf{Confirmation de rendez-vous :} Envoyé immédiatement après la création
+    \item \textbf{Modification de rendez-vous :} Envoyé lors d'une modification
+    \item \textbf{Annulation de rendez-vous :} Envoyé lors d'une annulation
+    \item \textbf{Notification de facture :} Envoyé avec le détail de la facture
+    \item \textbf{Confirmation de paiement :} Envoyé après enregistrement d'un paiement
+\end{itemize}
+
+\textbf{Contenu des emails :}
+\begin{itemize}
+    \item En-tête avec logo/branding du système
+    \item Détails complets du rendez-vous (date, heure, médecin, motif)
+    \item Informations de contact du cabinet
+    \item Footer avec mentions légales
+    \item Format HTML responsive pour lecture sur mobile
+\end{itemize}
+
+\textbf{Architecture technique :}
+\begin{itemize}
+    \item Notification Service écoute les événements RabbitMQ
+    \item Templating des emails en HTML/CSS
+    \item Envoi via API Resend
+    \item Gestion des erreurs d'envoi avec logs
+    \item Pas de blocage du processus principal (asynchrone)
+\end{itemize}
+
+\subsection{Système de Facturation}
+
+\subsubsection{Gestion des factures et paiements}
+
+La Figure~\ref{fig:billing} illustre l'interface de gestion de la facturation accessible aux réceptionnistes.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{ui/receptionist-billing-and-invoices-management.png}
+    \caption{Gestion de la facturation et des paiements}
+    \label{fig:billing}
+\end{figure}
+
+\textbf{Fonctionnalités de facturation :}
+\begin{itemize}
+    \item \textbf{Liste des factures :} Affichage de toutes les factures générées
+    \item \textbf{Détails de facture :} Numéro, date, montant, statut, rendez-vous associé
+    \item \textbf{Filtrage :} Par statut (En attente, Payée, En retard, Annulée)
+    \item \textbf{Recherche :} Par numéro de facture ou nom de patient
+    \item \textbf{Actions :} Enregistrer un paiement, consulter l'historique
+\end{itemize}
+
+\textbf{Gestion des paiements :}
+\begin{itemize}
+    \item Formulaire d'enregistrement de paiement
+    \item Montant du paiement (peut être partiel)
+    \item Méthode de paiement (Espèces, Carte, Virement)
+    \item Calcul automatique du solde restant
+    \item Mise à jour automatique du statut de la facture si paiement complet
+    \item Historique des paiements par facture
+\end{itemize}
+
+\textbf{Workflow de facturation :}
+\begin{enumerate}
+    \item Création d'un rendez-vous → Événement \texttt{RdvCreatedEvent}
+    \item Billing Service consomme l'événement
+    \item Génération automatique d'une facture avec :
+    \begin{itemize}
+        \item Numéro unique généré (format : INV-YYYY-XXXXX)
+        \item Date d'émission : date de création
+        \item Date d'échéance : date du rendez-vous
+        \item Montant calculé depuis Pricing Service
+        \item Statut initial : PENDING
+    \end{itemize}
+    \item Publication de l'événement \texttt{InvoiceCreatedEvent}
+    \item Notification Service envoie un email avec la facture
+    \item Le réceptionniste enregistre le paiement lors de la consultation
+    \item Publication de l'événement \texttt{PaymentConfirmedEvent}
+    \item Envoi d'un email de confirmation de paiement
+\end{enumerate}
+
+\section{Endpoints REST}
+
+Cette section décrit les principaux endpoints REST de chaque microservice.
+
+\subsection{Auth Service (Port 8084)}
+
+\textbf{Endpoints publics :}
+\begin{itemize}
+    \item \texttt{POST /api/auth/register} - Inscription d'un utilisateur
+    \item \texttt{POST /api/auth/login} - Connexion (retourne JWT)
+\end{itemize}
+
+\textbf{Endpoints protégés :}
+\begin{itemize}
+    \item \texttt{GET /api/auth/validate?token=\{jwt\}} - Valider un token
+    \item \texttt{GET /api/auth/me} - Profil de l'utilisateur connecté
+    \item \texttt{GET /api/users} - Liste des utilisateurs (Admin)
+    \item \texttt{GET /api/users/\{id\}} - Détails d'un utilisateur (Admin)
+    \item \texttt{POST /api/users} - Créer un utilisateur (Admin)
+    \item \texttt{PUT /api/users/\{id\}} - Modifier un utilisateur (Admin)
+    \item \texttt{DELETE /api/users/\{id\}} - Supprimer un utilisateur (Admin)
+\end{itemize}
+
+\subsection{Docteur Service (Port 8081)}
+
+\textbf{Endpoints publics :}
+\begin{itemize}
+    \item \texttt{GET /api/docteurs} - Liste de tous les médecins
+    \item \texttt{GET /api/docteurs/\{id\}} - Détails d'un médecin
+\end{itemize}
+
+\textbf{Endpoints protégés (Admin) :}
+\begin{itemize}
+    \item \texttt{POST /api/docteurs} - Créer un médecin
+    \item \texttt{PUT /api/docteurs/\{id\}} - Modifier un médecin
+    \item \texttt{DELETE /api/docteurs/\{id\}} - Supprimer un médecin
+\end{itemize}
+
+\subsection{RDV Service (Port 8082)}
+
+\textbf{Endpoints publics :}
+\begin{itemize}
+    \item \texttt{GET /api/rdv} - Liste de tous les rendez-vous
+    \item \texttt{GET /api/rdv/\{id\}} - Détails d'un rendez-vous
+    \item \texttt{POST /api/rdv} - Créer un rendez-vous (sans authentification)
+    \item \texttt{GET /api/rdv/docteur/\{docteurId\}} - Rendez-vous par médecin
+\end{itemize}
+
+\textbf{Endpoints protégés :}
+\begin{itemize}
+    \item \texttt{PUT /api/rdv/\{id\}} - Modifier un rendez-vous
+    \item \texttt{DELETE /api/rdv/\{id\}} - Annuler un rendez-vous
+    \item \texttt{PATCH /api/rdv/\{id\}/status} - Changer le statut
+\end{itemize}
+
+\subsection{Billing Service (Port 8085)}
+
+\textbf{Endpoints protégés (Réceptionniste/Admin) :}
+\begin{itemize}
+    \item \texttt{GET /api/billing/invoices} - Liste des factures
+    \item \texttt{GET /api/billing/invoices/\{id\}} - Détails d'une facture
+    \item \texttt{GET /api/billing/invoices/rdv/\{rdvId\}} - Facture par rendez-vous
+    \item \texttt{POST /api/billing/payments} - Enregistrer un paiement
+    \item \texttt{GET /api/billing/payments/invoice/\{invoiceId\}} - Paiements d'une facture
+    \item \texttt{GET /api/billing/pricing} - Liste des tarifs (Admin)
+    \item \texttt{PUT /api/billing/pricing/\{id\}} - Modifier un tarif (Admin)
+\end{itemize}
+
+\subsection{Notification Service (Port 8083)}
+
+Ce service n'expose pas d'endpoints REST publics. Il fonctionne uniquement en mode réactif, consommant les événements depuis RabbitMQ.
+
+\section{Défis Techniques et Solutions}
+
+\subsection{Gestion de la cohérence des données}
+
+\textbf{Défi :} Assurer la cohérence entre les différentes bases de données (rdvdb, billingdb) sans transactions distribuées.
+
+\textbf{Solution :}
+\begin{itemize}
+    \item Utilisation du pattern Event Sourcing via RabbitMQ
+    \item Messages persistés garantissant la livraison
+    \item Idempotence des consommateurs pour éviter les traitements en double
+    \item Cohérence éventuelle acceptée pour les opérations non critiques
+\end{itemize}
+
+\subsection{Circuit Breaker et Fallback}
+
+\textbf{Défi :} Gérer l'indisponibilité temporaire du Docteur Service lors de la création de rendez-vous.
+
+\textbf{Solution :}
+\begin{itemize}
+    \item Implémentation de Circuit Breaker avec Resilience4j
+    \item Configuration des seuils et timeouts
+    \item Message d'erreur explicite à l'utilisateur
+    \item Pas de fallback pour cette opération critique (on préfère échouer proprement)
+\end{itemize}
+
+\subsection{Sécurité JWT}
+
+\textbf{Défi :} Propager le contexte de sécurité à travers l'API Gateway vers les microservices.
+
+\textbf{Solution :}
+\begin{itemize}
+    \item Validation JWT centralisée au niveau de la Gateway
+    \item Propagation du header Authorization aux services backend
+    \item Configuration des endpoints publics (liste blanche dans la Gateway)
+    \item Expiration des tokens après 24 heures
+\end{itemize}
+
+\subsection{Gestion des erreurs}
+
+\textbf{Défi :} Fournir des messages d'erreur cohérents et exploitables sur tous les services.
+
+\textbf{Solution :}
+\begin{itemize}
+    \item \texttt{@ControllerAdvice} pour gestion globale des exceptions
+    \item Structure de réponse d'erreur standardisée (code, message, timestamp)
+    \item Validation avec \texttt{@Valid} et messages personnalisés
+    \item Logs structurés avec Slf4j
+\end{itemize}
+
+\section{Conclusion}
+
+Ce chapitre a présenté l'implémentation concrète du système à travers des captures d'écran illustrant toutes les fonctionnalités développées. L'interface utilisateur offre une expérience intuitive pour les différents acteurs (patients, réceptionnistes, administrateurs).
+
+Les endpoints REST sont conçus selon les bonnes pratiques RESTful, avec une séparation claire entre les opérations publiques et protégées. Les défis techniques rencontrés (cohérence des données, résilience, sécurité) ont été adressés avec des solutions éprouvées.
+
+Le chapitre suivant présentera la stratégie de tests mise en place pour valider le bon fonctionnement du système.
