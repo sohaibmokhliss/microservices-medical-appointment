@@ -83,7 +83,7 @@ Structure du service Notification:
 Interaction détaillée des microservices:
 - API Gateway (port 8080) avec filtre JWT global
 - Service Discovery Eureka (port 8761)
-- Auth Service (port 8084), Docteur (8083), RDV (8082), Notification (8085), Billing (8086)
+- Auth Service (port 8084), Docteur (8081), RDV (8082), Notification (8083), Billing (8085)
 - Bases de données PostgreSQL (authdb, docteurdb, rdvdb, billingdb)
 - RabbitMQ pour messaging asynchrone
 - Resend pour envoi d'emails

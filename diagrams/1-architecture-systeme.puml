@@ -18,10 +18,10 @@ component "API Gateway\n:8080" <<gateway>> as gateway
 component "Eureka Server\n:8761" <<infra>> as eureka
 
 component "Auth\nService\n:8084" <<service>> as auth
-component "Docteur\nService\n:8083" <<service>> as docteur
+component "Docteur\nService\n:8081" <<service>> as docteur
 component "RDV\nService\n:8082" <<service>> as rdv
-component "Notification\nService\n:8085" <<service>> as notif
-component "Billing\nService\n:8086" <<service>> as billing
+component "Notification\nService\n:8083" <<service>> as notif
+component "Billing\nService\n:8085" <<service>> as billing
 
 database "PostgreSQL\nauthdb" <<database>> as db0
 database "PostgreSQL\ndocteurdb" <<database>> as db1
