@@ -1,0 +1,487 @@
+\chapter{Choix Technologiques}
+
+\section{Introduction}
+
+Ce chapitre justifie les choix technologiques effectués pour l'implémentation de notre système de prise de rendez-vous médical. Nous présentons les technologies retenues pour le backend, le frontend, la persistance des données, l'infrastructure de messaging, et nous justifions ces choix en les comparant avec des alternatives possibles.
+
+\section{Technologies Backend}
+
+\subsection{Spring Boot 3.2}
+
+\subsubsection{Description}
+
+Spring Boot est un framework Java qui simplifie le développement d'applications Spring en proposant une configuration automatique, un serveur embarqué et un écosystème riche de starters.
+
+\subsubsection{Justification du choix}
+
+\begin{itemize}
+    \item \textbf{Maturité et stabilité :} Framework éprouvé utilisé par des milliers d'entreprises
+    \item \textbf{Productivité :} Configuration par convention, réduction du boilerplate
+    \item \textbf{Écosystème Spring :} Intégration transparente avec Spring Cloud, Spring Security, Spring Data
+    \item \textbf{Support microservices :} Conception native pour architectures distribuées
+    \item \textbf{Documentation extensive :} Ressources abondantes et communauté active
+    \item \textbf{Performance :} Serveur Tomcat/Netty embarqué optimisé
+\end{itemize}
+
+\subsubsection{Alternatives considérées}
+
+\begin{table}[H]
+\centering
+\caption{Comparaison des frameworks backend}
+\label{tab:backend-comparison}
+\begin{tabular}{|l|p{4cm}|p{4cm}|}
+\hline
+\textbf{Framework} & \textbf{Avantages} & \textbf{Inconvénients} \\
+\hline
+Spring Boot & Écosystème complet, maturité & Courbe d'apprentissage \\
+\hline
+Quarkus & Performance native, léger & Écosystème moins mature \\
+\hline
+Micronaut & Démarrage rapide, faible mémoire & Communauté plus petite \\
+\hline
+Node.js/Express & Simplicité, JavaScript full-stack & Moins adapté aux apps complexes \\
+\hline
+\end{tabular}
+\end{table}
+
+\subsection{Spring Cloud}
+
+Spring Cloud fournit des outils pour construire des systèmes distribués robustes. Nous utilisons plusieurs de ses modules :
+
+\subsubsection{Spring Cloud Gateway}
+
+\textbf{Rôle :} API Gateway du système
+
+\textbf{Fonctionnalités utilisées :}
+\begin{itemize}
+    \item Routage dynamique basé sur des prédicats
+    \item Filtres de pré et post-traitement des requêtes
+    \item Load balancing intégré avec Eureka
+    \item Support WebFlux pour réactivité et performances
+\end{itemize}
+
+\textbf{Justification :}
+\begin{itemize}
+    \item Intégration native avec l'écosystème Spring
+    \item Configuration déclarative en YAML
+    \item Performance supérieure grâce à l'architecture réactive
+    \item Alternative à Netflix Zuul (déprécié)
+\end{itemize}
+
+\subsubsection{Spring Cloud Netflix Eureka}
+
+\textbf{Rôle :} Service Discovery et Registry
+
+\textbf{Justification :}
+\begin{itemize}
+    \item Pattern Service Discovery éprouvé
+    \item Enregistrement automatique des services au démarrage
+    \item Health checking intégré
+    \item Dashboard de monitoring inclus
+    \item Alternative : Consul (plus complexe à configurer)
+\end{itemize}
+
+\subsubsection{Spring Cloud OpenFeign}
+
+\textbf{Rôle :} Client REST déclaratif pour communications synchrones
+
+\textbf{Justification :}
+\begin{itemize}
+    \item Syntaxe déclarative réduisant le code boilerplate
+    \item Intégration native avec Eureka (résolution par nom de service)
+    \item Support du load balancing automatique
+    \item Intégration transparente avec Resilience4j
+\end{itemize}
+
+\textbf{Alternative :} RestTemplate (approche plus impérative, plus verbeux)
+
+\subsection{Spring Security et JWT}
+
+\subsubsection{Spring Security}
+
+\textbf{Rôle :} Framework de sécurité pour authentification et autorisation
+
+\textbf{Fonctionnalités utilisées :}
+\begin{itemize}
+    \item Chiffrement des mots de passe avec BCrypt
+    \item Configuration du contrôle d'accès basé sur les rôles (RBAC)
+    \item Filtres de sécurité personnalisés pour JWT
+    \item Protection CSRF (Cross-Site Request Forgery)
+\end{itemize}
+
+\subsubsection{JWT (JSON Web Token)}
+
+\textbf{Rôle :} Format de token pour l'authentification stateless
+
+\textbf{Structure d'un JWT :}
+\begin{itemize}
+    \item \textbf{Header :} Type de token et algorithme de signature (HS256)
+    \item \textbf{Payload :} Claims (email, rôle, date d'expiration)
+    \item \textbf{Signature :} Garantit l'intégrité du token
+\end{itemize}
+
+\textbf{Justification :}
+\begin{itemize}
+    \item \textbf{Stateless :} Pas de session côté serveur, favorise la scalabilité
+    \item \textbf{Auto-contenu :} Le token contient toutes les informations nécessaires
+    \item \textbf{Portable :} Peut être utilisé sur différents domaines et services
+    \item \textbf{Standard :} RFC 7519, large adoption
+\end{itemize}
+
+\textbf{Alternative :} Sessions serveur (requiert sticky sessions, moins scalable)
+
+\subsection{Resilience4j}
+
+\textbf{Rôle :} Bibliothèque de patterns de résilience
+
+\textbf{Patterns implémentés :}
+
+\subsubsection{Circuit Breaker}
+\begin{itemize}
+    \item Protège contre les défaillances en cascade
+    \item Configuration : 50\% d'échecs sur 10 requêtes → circuit ouvert
+    \item Durée d'ouverture : 60 secondes avant tentative de fermeture
+    \item État semi-ouvert : test progressif du service
+\end{itemize}
+
+\subsubsection{Retry}
+\begin{itemize}
+    \item Réessaie les requêtes échouées automatiquement
+    \item Configuration : 3 tentatives avec backoff exponentiel
+    \item Évite les erreurs temporaires de réseau
+\end{itemize}
+
+\subsubsection{Timeout}
+\begin{itemize}
+    \item Limite le temps d'attente d'une réponse
+    \item Configuration : 5 secondes maximum
+    \item Évite les blocages indéfinis
+\end{itemize}
+
+\textbf{Justification vs. Netflix Hystrix :}
+\begin{itemize}
+    \item Hystrix est en mode maintenance (non recommandé pour nouveaux projets)
+    \item Resilience4j : léger, modulaire, compatible Java 8+
+    \item Meilleure intégration avec Spring Boot 3
+    \item API fonctionnelle moderne (lambdas, composable)
+\end{itemize}
+
+\subsection{Spring AMQP et RabbitMQ}
+
+\subsubsection{Spring AMQP}
+
+\textbf{Rôle :} Abstraction Spring pour le protocole AMQP
+
+\textbf{Fonctionnalités utilisées :}
+\begin{itemize}
+    \item \texttt{@RabbitListener} pour les consommateurs de messages
+    \item \texttt{RabbitTemplate} pour la publication de messages
+    \item Conversion automatique JSON ↔ Java Objects
+    \item Gestion des acknowledgments et rejets
+\end{itemize}
+
+\subsubsection{RabbitMQ}
+
+\textbf{Rôle :} Message broker AMQP
+
+\textbf{Justification :}
+\begin{itemize}
+    \item \textbf{Protocole standardisé :} AMQP (Advanced Message Queuing Protocol)
+    \item \textbf{Fiabilité :} Persistance des messages, acknowledgments
+    \item \textbf{Flexibilité :} Exchanges, queues, bindings configurables
+    \item \textbf{Performance :} Capable de gérer des milliers de messages/seconde
+    \item \textbf{Monitoring :} Interface web de management incluse
+    \item \textbf{Maturité :} Solution éprouvée, utilisée en production par de grandes entreprises
+\end{itemize}
+
+\textbf{Alternatives considérées :}
+
+\begin{table}[H]
+\centering
+\caption{Comparaison des message brokers}
+\label{tab:message-broker}
+\begin{tabular}{|l|p{4cm}|p{4cm}|}
+\hline
+\textbf{Broker} & \textbf{Avantages} & \textbf{Inconvénients} \\
+\hline
+RabbitMQ & Fiabilité, flexibilité routage & Complexité configuration \\
+\hline
+Apache Kafka & Haute performance, streaming & Overkill pour ce projet \\
+\hline
+ActiveMQ & Maturité, JMS natif & Performance moindre \\
+\hline
+Redis Pub/Sub & Simplicité, rapidité & Pas de persistance garantie \\
+\hline
+\end{tabular}
+\end{table}
+
+\subsection{Spring Data JPA}
+
+\textbf{Rôle :} Abstraction de la couche de persistance
+
+\textbf{Fonctionnalités utilisées :}
+\begin{itemize}
+    \item Génération automatique de requêtes depuis les noms de méthodes
+    \item Gestion des transactions avec \texttt{@Transactional}
+    \item Mapping objet-relationnel (ORM) avec Hibernate
+    \item Pagination et tri intégrés
+\end{itemize}
+
+\textbf{Justification :}
+\begin{itemize}
+    \item Réduction drastique du code JDBC boilerplate
+    \item Requêtes type-safe
+    \item Gestion automatique des connexions et transactions
+    \item Support de plusieurs SGBD sans modification de code
+\end{itemize}
+
+\subsection{Lombok}
+
+\textbf{Rôle :} Réduction du code boilerplate Java
+
+\textbf{Annotations utilisées :}
+\begin{itemize}
+    \item \texttt{@Data} : Génère getters, setters, toString, equals, hashCode
+    \item \texttt{@NoArgsConstructor}, \texttt{@AllArgsConstructor} : Constructeurs
+    \item \texttt{@Builder} : Pattern builder pour construction d'objets
+    \item \texttt{@Slf4j} : Logger automatique
+\end{itemize}
+
+\textbf{Justification :}
+\begin{itemize}
+    \item Code plus lisible et concis
+    \item Réduction des erreurs manuelles
+    \item Standard de facto dans l'écosystème Spring
+\end{itemize}
+
+\section{Technologies Frontend}
+
+\subsection{React 18}
+
+\subsubsection{Description}
+
+React est une bibliothèque JavaScript pour la construction d'interfaces utilisateur, développée par Meta (Facebook).
+
+\subsubsection{Justification du choix}
+
+\begin{itemize}
+    \item \textbf{Composants réutilisables :} Architecture modulaire facilitant la maintenance
+    \item \textbf{Virtual DOM :} Optimisation des performances de rendu
+    \item \textbf{Écosystème riche :} Nombreuses bibliothèques complémentaires
+    \item \textbf{Communauté active :} Ressources, tutoriels, support abondants
+    \item \textbf{React Hooks :} Gestion d'état simplifiée (useState, useEffect)
+    \item \textbf{Large adoption :} Compétence recherchée sur le marché
+\end{itemize}
+
+\subsubsection{Alternatives considérées}
+
+\begin{table}[H]
+\centering
+\caption{Comparaison des frameworks frontend}
+\label{tab:frontend-comparison}
+\begin{tabular}{|l|p{4cm}|p{4cm}|}
+\hline
+\textbf{Framework} & \textbf{Avantages} & \textbf{Inconvénients} \\
+\hline
+React & Flexibilité, écosystème & Configuration initiale \\
+\hline
+Vue.js & Courbe apprentissage douce & Écosystème plus petit \\
+\hline
+Angular & Framework complet, TypeScript & Complexité, verbosité \\
+\hline
+Svelte & Performance, simplicité & Communauté plus petite \\
+\hline
+\end{tabular}
+\end{table}
+
+\subsection{Axios}
+
+\textbf{Rôle :} Client HTTP pour les appels API
+
+\textbf{Fonctionnalités utilisées :}
+\begin{itemize}
+    \item Intercepteurs pour ajouter le token JWT automatiquement
+    \item Transformation automatique des réponses JSON
+    \item Gestion des erreurs centralisée
+    \item Support des Promises et async/await
+\end{itemize}
+
+\textbf{Justification vs. Fetch API native :}
+\begin{itemize}
+    \item API plus simple et intuitive
+    \item Intercepteurs puissants pour middleware
+    \item Transformation automatique des données
+    \item Meilleure gestion des erreurs
+    \item Compatibilité navigateurs anciens
+\end{itemize}
+
+\subsection{CSS3}
+
+\textbf{Approche :} CSS personnalisé sans framework lourd
+
+\textbf{Justification :}
+\begin{itemize}
+    \item \textbf{Contrôle total :} Styles adaptés précisément aux besoins
+    \item \textbf{Légèreté :} Pas de CSS framework volumineux
+    \item \textbf{Performance :} Pas de classes inutilisées
+    \item \textbf{Responsive :} Media queries pour adaptation mobile
+\end{itemize}
+
+\textbf{Alternative :} Frameworks CSS (Bootstrap, Tailwind) - non retenus pour éviter la surcharge et garder une identité visuelle propre
+
+\section{Base de Données}
+
+\subsection{PostgreSQL}
+
+\subsubsection{Description}
+
+PostgreSQL est un système de gestion de base de données relationnelle (SGBDR) open-source, réputé pour sa robustesse et sa conformité aux standards SQL.
+
+\subsubsection{Justification du choix}
+
+\begin{itemize}
+    \item \textbf{Fiabilité :} ACID (Atomicity, Consistency, Isolation, Durability) complet
+    \item \textbf{Performance :} Optimisations avancées, indexation efficace
+    \item \textbf{Conformité SQL :} Respect strict des standards SQL
+    \item \textbf{Fonctionnalités avancées :} JSON, transactions, contraintes complexes
+    \item \textbf{Scalabilité :} Gestion de grandes volumétries de données
+    \item \textbf{Open-source :} Pas de coûts de licence
+    \item \textbf{Écosystème :} Support JPA/Hibernate excellent
+\end{itemize}
+
+\subsubsection{Architecture multi-bases}
+
+Conformément au principe "Database per Service", nous avons créé quatre bases distinctes :
+
+\begin{itemize}
+    \item \textbf{authdb :} Utilisateurs et authentification
+    \item \textbf{docteurdb :} Référentiel des médecins
+    \item \textbf{rdvdb :} Rendez-vous
+    \item \textbf{billingdb :} Facturation et paiements
+\end{itemize}
+
+\textbf{Avantages :}
+\begin{itemize}
+    \item Autonomie des services
+    \item Scalabilité indépendante
+    \item Évite les couplages par la donnée
+    \item Possibilité de choisir des technologies différentes par service si nécessaire
+\end{itemize}
+
+\subsubsection{Alternatives considérées}
+
+\begin{table}[H]
+\centering
+\caption{Comparaison des SGBD}
+\label{tab:database-comparison}
+\begin{tabular}{|l|p{4cm}|p{4cm}|}
+\hline
+\textbf{SGBD} & \textbf{Avantages} & \textbf{Inconvénients} \\
+\hline
+PostgreSQL & Robustesse, conformité SQL & Configuration initiale \\
+\hline
+MySQL & Simplicité, large adoption & Fonctionnalités moins avancées \\
+\hline
+MongoDB & Flexibilité schéma, NoSQL & Non adapté aux données relationnelles \\
+\hline
+Oracle & Performance enterprise & Coûts de licence élevés \\
+\hline
+\end{tabular}
+\end{table}
+
+\section{Infrastructure et Outils}
+
+\subsection{Docker}
+
+\textbf{Utilisation :} Conteneurisation de RabbitMQ
+
+\textbf{Justification :}
+\begin{itemize}
+    \item \textbf{Portabilité :} Environnement identique sur tous les systèmes
+    \item \textbf{Isolation :} Pas de conflits avec d'autres installations
+    \item \textbf{Simplicité :} Démarrage en une commande
+    \item \textbf{Reproductibilité :} Configuration versionnée
+\end{itemize}
+
+\textbf{Configuration :}
+\begin{itemize}
+    \item Image officielle : \texttt{rabbitmq:3-management}
+    \item Port AMQP : 5672
+    \item Port Management UI : 15672
+    \item Persistence des données : volume Docker
+\end{itemize}
+
+\subsection{Resend API}
+
+\textbf{Rôle :} Service d'envoi d'emails transactionnels
+
+\textbf{Justification :}
+\begin{itemize}
+    \item \textbf{API moderne :} Interface REST simple et claire
+    \item \textbf{Délivrabilité :} Infrastructure optimisée pour l'inbox
+    \item \textbf{Templates HTML :} Support complet du HTML/CSS
+    \item \textbf{Documentation :} Excellente documentation et SDK
+    \item \textbf{Pricing :} Gratuit jusqu'à 3000 emails/mois
+\end{itemize}
+
+\textbf{Alternatives :} SendGrid, Mailgun, Amazon SES (plus complexes à configurer)
+
+\subsection{Maven}
+
+\textbf{Rôle :} Gestion des dépendances et build tool
+
+\textbf{Justification :}
+\begin{itemize}
+    \item Standard de facto pour les projets Spring Boot
+    \item Gestion déclarative des dépendances (pom.xml)
+    \item Build reproductible
+    \item Large écosystème de plugins
+\end{itemize}
+
+\subsection{npm}
+
+\textbf{Rôle :} Gestionnaire de paquets pour le frontend React
+
+\textbf{Justification :}
+\begin{itemize}
+    \item Écosystème JavaScript standard
+    \item Scripts de build et développement
+    \item Gestion des versions des dépendances
+\end{itemize}
+
+\section{Versions des Technologies}
+
+\begin{table}[H]
+\centering
+\caption{Versions des technologies utilisées}
+\label{tab:versions}
+\begin{tabular}{|l|l|}
+\hline
+\textbf{Technologie} & \textbf{Version} \\
+\hline
+Java & 17 LTS \\
+\hline
+Spring Boot & 3.2.0 \\
+\hline
+Spring Cloud & 2023.0.0 \\
+\hline
+PostgreSQL & 15 \\
+\hline
+RabbitMQ & 3.12 \\
+\hline
+React & 18.2.0 \\
+\hline
+Node.js & 18 LTS \\
+\hline
+Maven & 3.8+ \\
+\hline
+\end{tabular}
+\end{table}
+
+\section{Conclusion}
+
+Ce chapitre a justifié les choix technologiques effectués pour notre système. Les technologies retenues (Spring Boot, Spring Cloud, React, PostgreSQL, RabbitMQ) forment un stack moderne, robuste et largement adopté dans l'industrie.
+
+Ces choix permettent de répondre aux exigences de scalabilité, résilience, maintenabilité et sécurité identifiées dans les chapitres précédents. L'écosystème Spring offre une intégration harmonieuse entre tous les composants, réduisant la complexité d'implémentation.
+
+Le chapitre suivant présentera l'implémentation concrète du système avec des captures d'écran illustrant les fonctionnalités réalisées.

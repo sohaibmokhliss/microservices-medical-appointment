@@ -1,0 +1,258 @@
+\chapter{Étude de l'Existant et Analyse des Besoins}
+
+\section{Introduction}
+
+Ce chapitre présente l'étude de l'existant dans le domaine de la prise de rendez-vous médical en ligne, ainsi qu'une analyse détaillée des besoins auxquels notre système doit répondre. Nous commençons par situer le projet dans le contexte de l'e-Santé, puis nous identifions les différents acteurs du système, analysons les solutions existantes, et enfin nous spécifions les besoins fonctionnels et non-fonctionnels.
+
+\section{Contexte de l'e-Santé}
+
+\subsection{Définition et enjeux}
+
+L'e-Santé (ou santé numérique) désigne l'utilisation des technologies de l'information et de la communication (TIC) dans le domaine de la santé. Elle englobe un large éventail d'applications, allant de la télémédecine aux dossiers médicaux électroniques, en passant par les systèmes de prise de rendez-vous en ligne.
+
+Les enjeux de l'e-Santé sont multiples :
+
+\begin{itemize}
+    \item \textbf{Amélioration de l'accès aux soins :} Réduction des délais d'attente et facilitation de la prise de contact avec les professionnels de santé.
+    
+    \item \textbf{Optimisation de la gestion :} Amélioration de l'efficacité organisationnelle des cabinets médicaux et des établissements de santé.
+    
+    \item \textbf{Traçabilité :} Meilleure gestion des informations médicales et des historiques patients.
+    
+    \item \textbf{Réduction des coûts :} Diminution des coûts administratifs et optimisation des ressources.
+    
+    \item \textbf{Expérience patient :} Amélioration du parcours de soins et de la satisfaction des patients.
+\end{itemize}
+
+\subsection{Situation au Maroc}
+
+Au Maroc, le secteur de la santé connaît une transformation progressive vers le numérique. Plusieurs initiatives gouvernementales et privées visent à moderniser le système de santé. Cependant, de nombreux établissements et cabinets médicaux fonctionnent encore selon des modes de gestion traditionnels, notamment pour la prise de rendez-vous.
+
+\section{Identification des Acteurs}
+
+Le système de prise de rendez-vous médical met en jeu plusieurs catégories d'acteurs, chacun ayant des besoins et des rôles spécifiques :
+
+\subsection{Patient}
+
+Le patient est l'utilisateur principal du système. Il souhaite :
+\begin{itemize}
+    \item Consulter la liste des médecins disponibles avec leurs spécialités
+    \item Prendre un rendez-vous en ligne sans authentification préalable
+    \item Recevoir une confirmation par email
+    \item Consulter l'historique de ses rendez-vous (si authentifié)
+    \item Annuler ou modifier un rendez-vous si nécessaire
+\end{itemize}
+
+\subsection{Médecin}
+
+Le médecin est le prestataire de soins. Bien que sa gestion soit assurée par d'autres acteurs, le système doit représenter :
+\begin{itemize}
+    \item Son profil (nom, spécialité, coordonnées)
+    \item Ses disponibilités
+    \item La liste de ses rendez-vous
+\end{itemize}
+
+\subsection{Réceptionniste}
+
+Le réceptionniste joue un rôle clé dans la gestion quotidienne du cabinet médical :
+\begin{itemize}
+    \item Visualiser les rendez-vous de tous les médecins
+    \item Consulter la liste des médecins
+    \item Gérer les factures et les paiements
+    \item Accéder aux informations des patients
+\end{itemize}
+
+\subsection{Administrateur}
+
+L'administrateur est responsable de la gestion globale du système :
+\begin{itemize}
+    \item Gérer les médecins (ajout, modification, suppression)
+    \item Gérer les utilisateurs (réceptionnistes, comptes)
+    \item Configurer les paramètres du système
+    \item Superviser l'ensemble des opérations
+\end{itemize}
+
+\section{Étude des Solutions Existantes}
+
+Plusieurs solutions de prise de rendez-vous médical en ligne existent sur le marché. Nous analysons ici les principales plateformes pour identifier leurs forces et leurs limites.
+
+\subsection{Doctolib}
+
+\textbf{Description :} Leader européen de la prise de rendez-vous médical en ligne, présent en France, en Allemagne et en Italie.
+
+\textbf{Points forts :}
+\begin{itemize}
+    \item Interface utilisateur intuitive et moderne
+    \item Large réseau de professionnels de santé
+    \item Gestion complète de l'agenda médical
+    \item Téléconsultation intégrée
+    \item Application mobile performante
+\end{itemize}
+
+\textbf{Limites :}
+\begin{itemize}
+    \item Coût d'abonnement élevé pour les professionnels
+    \item Dépendance à une plateforme propriétaire
+    \item Absence de personnalisation pour les établissements
+\end{itemize}
+
+\subsection{Maiia}
+
+\textbf{Description :} Plateforme française de prise de rendez-vous développée par les professionnels de santé.
+
+\textbf{Points forts :}
+\begin{itemize}
+    \item Gestion de plusieurs établissements
+    \item Intégration avec les logiciels médicaux existants
+    \item Respect des normes de confidentialité médicale
+\end{itemize}
+
+\textbf{Limites :}
+\begin{itemize}
+    \item Interface moins moderne que Doctolib
+    \item Couverture géographique limitée
+\end{itemize}
+
+\subsection{Keldoc}
+
+\textbf{Description :} Solution française de prise de rendez-vous en ligne avec focus sur la simplicité.
+
+\textbf{Points forts :}
+\begin{itemize}
+    \item Facilité d'utilisation pour les patients
+    \item Prise de rendez-vous rapide sans création de compte
+    \item Système de rappels automatiques
+\end{itemize}
+
+\textbf{Limites :}
+\begin{itemize}
+    \item Fonctionnalités de gestion limitées
+    \item Absence de système de facturation intégré
+\end{itemize}
+
+\subsection{Synthèse comparative}
+
+\begin{table}[H]
+\centering
+\caption{Comparaison des solutions existantes}
+\label{tab:comparison}
+\begin{tabular}{|l|c|c|c|}
+\hline
+\textbf{Critère} & \textbf{Doctolib} & \textbf{Maiia} & \textbf{Keldoc} \\
+\hline
+Facilité d'utilisation & Excellente & Bonne & Excellente \\
+\hline
+Gestion complète & Oui & Oui & Limitée \\
+\hline
+Facturation intégrée & Oui & Partielle & Non \\
+\hline
+Open Source & Non & Non & Non \\
+\hline
+Personnalisable & Non & Limitée & Non \\
+\hline
+Coût & Élevé & Moyen & Moyen \\
+\hline
+\end{tabular}
+\end{table}
+
+\section{Analyse des Besoins}
+
+\subsection{Besoins fonctionnels}
+
+Les besoins fonctionnels décrivent ce que le système doit faire. Ils sont organisés par catégorie d'acteur :
+
+\subsubsection{Gestion des utilisateurs}
+\begin{itemize}
+    \item \textbf{BF1 :} Le système doit permettre l'inscription d'un nouvel utilisateur
+    \item \textbf{BF2 :} Le système doit permettre l'authentification par email et mot de passe
+    \item \textbf{BF3 :} Le système doit gérer les rôles (Admin, User/Receptionist)
+    \item \textbf{BF4 :} L'administrateur doit pouvoir créer, modifier et supprimer des utilisateurs
+\end{itemize}
+
+\subsubsection{Gestion des médecins}
+\begin{itemize}
+    \item \textbf{BF5 :} Le système doit permettre la consultation publique de la liste des médecins
+    \item \textbf{BF6 :} Chaque médecin doit avoir un profil avec nom, prénom, spécialité, email et téléphone
+    \item \textbf{BF7 :} L'administrateur doit pouvoir ajouter, modifier et supprimer des médecins
+\end{itemize}
+
+\subsubsection{Gestion des rendez-vous}
+\begin{itemize}
+    \item \textbf{BF8 :} Le système doit permettre la prise de rendez-vous sans authentification
+    \item \textbf{BF9 :} Un rendez-vous doit inclure : patient (nom, email, téléphone), médecin, date, heure, motif
+    \item \textbf{BF10 :} Le système doit valider que la date du rendez-vous est dans le futur
+    \item \textbf{BF11 :} Le système doit permettre la consultation de tous les rendez-vous
+    \item \textbf{BF12 :} Le système doit permettre la modification et l'annulation de rendez-vous
+    \item \textbf{BF13 :} Le système doit afficher les rendez-vous d'un médecin spécifique
+\end{itemize}
+
+\subsubsection{Système de notifications}
+\begin{itemize}
+    \item \textbf{BF14 :} Le système doit envoyer un email de confirmation lors de la création d'un rendez-vous
+    \item \textbf{BF15 :} Le système doit envoyer un email lors de la modification d'un rendez-vous
+    \item \textbf{BF16 :} Le système doit envoyer un email lors de l'annulation d'un rendez-vous
+    \item \textbf{BF17 :} Le système doit envoyer un email lors de la création d'une facture
+    \item \textbf{BF18 :} Le système doit envoyer un email de confirmation de paiement
+\end{itemize}
+
+\subsubsection{Système de facturation}
+\begin{itemize}
+    \item \textbf{BF19 :} Le système doit générer automatiquement une facture pour chaque rendez-vous
+    \item \textbf{BF20 :} Une facture doit inclure : numéro, date, montant, statut, référence au rendez-vous
+    \item \textbf{BF21 :} Le système doit permettre l'enregistrement de paiements
+    \item \textbf{BF22 :} Un paiement doit inclure : montant, date, méthode, référence à la facture
+    \item \textbf{BF23 :} Le réceptionniste doit pouvoir consulter les factures et paiements
+\end{itemize}
+
+\subsection{Besoins non-fonctionnels}
+
+Les besoins non-fonctionnels définissent les contraintes et qualités attendues du système :
+
+\subsubsection{Performance}
+\begin{itemize}
+    \item \textbf{BNF1 :} Le temps de réponse pour une requête simple doit être inférieur à 2 secondes
+    \item \textbf{BNF2 :} Le système doit supporter au moins 100 utilisateurs simultanés
+\end{itemize}
+
+\subsubsection{Sécurité}
+\begin{itemize}
+    \item \textbf{BNF3 :} Les mots de passe doivent être chiffrés (BCrypt)
+    \item \textbf{BNF4 :} L'authentification doit utiliser des tokens JWT
+    \item \textbf{BNF5 :} Le système doit implémenter un contrôle d'accès basé sur les rôles (RBAC)
+    \item \textbf{BNF6 :} Les communications sensibles doivent utiliser HTTPS
+\end{itemize}
+
+\subsubsection{Disponibilité et Résilience}
+\begin{itemize}
+    \item \textbf{BNF7 :} Le système doit rester fonctionnel même en cas de défaillance d'un service (Circuit Breaker)
+    \item \textbf{BNF8 :} Les messages asynchrones doivent être persistés pour garantir leur traitement
+    \item \textbf{BNF9 :} Le système doit implémenter des mécanismes de retry pour les opérations critiques
+\end{itemize}
+
+\subsubsection{Scalabilité}
+\begin{itemize}
+    \item \textbf{BNF10 :} L'architecture doit permettre le déploiement horizontal des services
+    \item \textbf{BNF11 :} Chaque service doit pouvoir être mis à l'échelle indépendamment
+\end{itemize}
+
+\subsubsection{Maintenabilité}
+\begin{itemize}
+    \item \textbf{BNF12 :} Le code doit respecter les principes SOLID
+    \item \textbf{BNF13 :} Chaque service doit avoir sa propre base de données
+    \item \textbf{BNF14 :} Le système doit avoir une couverture de tests unitaires minimale de 70\%
+\end{itemize}
+
+\subsubsection{Utilisabilité}
+\begin{itemize}
+    \item \textbf{BNF15 :} L'interface doit être responsive (adaptée aux mobiles et tablettes)
+    \item \textbf{BNF16 :} L'interface doit être intuitive et ne nécessiter aucune formation
+    \item \textbf{BNF17 :} Les messages d'erreur doivent être clairs et en français
+\end{itemize}
+
+\section{Conclusion}
+
+Ce chapitre a permis de situer notre projet dans le contexte de l'e-Santé et d'analyser les solutions existantes sur le marché. L'identification des acteurs et l'analyse détaillée des besoins fonctionnels et non-fonctionnels constituent la base solide sur laquelle repose la conception de notre système.
+
+L'étude comparative des solutions existantes (Doctolib, Maiia, Keldoc) a révélé que, bien qu'elles offrent des fonctionnalités avancées, elles présentent des limitations en termes de coût, de personnalisation et d'ouverture. Notre approche basée sur une architecture microservices open-source vise à proposer une alternative flexible, évolutive et maintenable.
+
+Le chapitre suivant présentera l'architecture générale du système que nous avons conçue pour répondre à ces besoins.

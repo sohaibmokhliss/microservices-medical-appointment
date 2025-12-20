@@ -1,0 +1,86 @@
+\chapter*{Introduction Générale}
+\addcontentsline{toc}{chapter}{Introduction Générale}
+
+\section*{Contexte}
+
+La transformation numérique du secteur de la santé représente aujourd'hui un enjeu stratégique majeur dans l'amélioration de l'accès aux soins et l'optimisation de la gestion des établissements médicaux. Au Maroc, comme dans de nombreux pays, le secteur de la santé fait face à des défis importants en termes d'efficacité organisationnelle, de coordination entre les différents acteurs, et d'expérience patient.
+
+La prise de rendez-vous médical constitue un point de contact essentiel entre les patients et les professionnels de santé. Traditionnellement réalisée par téléphone ou en présence physique, cette démarche présente plusieurs limitations : disponibilité restreinte des lignes téléphoniques, temps d'attente important, erreurs de planification, difficultés de gestion des annulations et reports, et absence de traçabilité efficace.
+
+L'évolution des technologies web et des architectures logicielles modernes offre aujourd'hui l'opportunité de repenser complètement cette interaction. L'architecture microservices, en particulier, permet de concevoir des systèmes informatiques robustes, évolutifs et maintenables, capables de répondre aux exigences complexes du domaine médical.
+
+\section*{Problématique}
+
+La conception d'un système de prise de rendez-vous médical en ligne soulève plusieurs problématiques techniques et fonctionnelles :
+
+\begin{itemize}
+    \item \textbf{Évolutivité :} Comment concevoir un système capable de supporter une croissance du nombre d'utilisateurs et de médecins sans dégradation des performances ?
+    
+    \item \textbf{Disponibilité :} Comment garantir la disponibilité continue du service, même en cas de défaillance partielle du système ?
+    
+    \item \textbf{Sécurité :} Comment protéger les données sensibles des patients et assurer un contrôle d'accès rigoureux ?
+    
+    \item \textbf{Maintenabilité :} Comment faciliter l'évolution et la maintenance du système face à des besoins fonctionnels changeants ?
+    
+    \item \textbf{Coordination :} Comment orchestrer les différentes fonctionnalités (authentification, gestion des rendez-vous, notifications, facturation) de manière cohérente ?
+\end{itemize}
+
+\section*{Objectifs du Projet}
+
+Ce projet vise à concevoir et réaliser un système complet de prise de rendez-vous médical en ligne, basé sur une architecture microservices moderne. Les objectifs spécifiques sont les suivants :
+
+\begin{enumerate}
+    \item \textbf{Développer une solution web complète} permettant aux patients de consulter les médecins disponibles et de prendre des rendez-vous en ligne de manière intuitive.
+    
+    \item \textbf{Implémenter une architecture microservices} robuste, composée de services indépendants communicant de manière synchrone et asynchrone.
+    
+    \item \textbf{Mettre en place un système d'authentification sécurisé} basé sur JWT avec contrôle d'accès par rôles (administrateur, réceptionniste, patient).
+    
+    \item \textbf{Assurer la résilience du système} en implémentant des patterns de tolérance aux pannes (Circuit Breaker, Retry, Timeout).
+    
+    \item \textbf{Intégrer un système de notifications automatiques} pour informer les patients de leurs rendez-vous par email.
+    
+    \item \textbf{Développer un module de facturation} permettant la génération et la gestion automatisée des factures et paiements.
+    
+    \item \textbf{Garantir la scalabilité} du système pour supporter une montée en charge progressive.
+\end{enumerate}
+
+\section*{Méthodologie}
+
+Pour atteindre ces objectifs, nous avons adopté une méthodologie structurée en plusieurs phases :
+
+\begin{itemize}
+    \item \textbf{Analyse :} Étude de l'existant, identification des acteurs et des besoins fonctionnels et non-fonctionnels.
+    
+    \item \textbf{Conception :} Définition de l'architecture globale, modélisation des données et des interactions entre services.
+    
+    \item \textbf{Choix technologiques :} Sélection des technologies et frameworks adaptés aux contraintes du projet.
+    
+    \item \textbf{Réalisation :} Développement itératif des microservices et de l'interface utilisateur.
+    
+    \item \textbf{Tests et validation :} Mise en place de tests unitaires, d'intégration et de résilience.
+    
+    \item \textbf{Évaluation :} Analyse des résultats et discussion des points forts et limitations.
+\end{itemize}
+
+\section*{Organisation du Rapport}
+
+Ce rapport est organisé en sept chapitres :
+
+\begin{itemize}
+    \item Le \textbf{Chapitre 1} présente l'étude de l'existant dans le domaine de la prise de rendez-vous médical en ligne, ainsi que l'analyse détaillée des besoins fonctionnels et non-fonctionnels.
+    
+    \item Le \textbf{Chapitre 2} décrit l'architecture générale du système, les principes de l'architecture microservices adoptée, et les modes de communication entre services.
+    
+    \item Le \textbf{Chapitre 3} détaille la conception du système à travers les diagrammes UML (classes, entités) et la description des patterns de conception utilisés.
+    
+    \item Le \textbf{Chapitre 4} justifie les choix technologiques effectués pour le backend, le frontend et l'infrastructure.
+    
+    \item Le \textbf{Chapitre 5} présente l'implémentation concrète du système avec des captures d'écran illustrant les différentes fonctionnalités.
+    
+    \item Le \textbf{Chapitre 6} expose la stratégie de tests mise en place et les résultats de validation du système.
+    
+    \item Le \textbf{Chapitre 7} discute les résultats obtenus, les fonctionnalités implémentées, et propose une analyse critique du système.
+    
+    \item Enfin, la \textbf{Conclusion} dresse un bilan du projet et présente les perspectives d'évolution à court, moyen et long terme.
+\end{itemize}
